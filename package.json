@@ -1,0 +1,14 @@
+{
+  "name": "gifplay",
+  "version": "1.0.0",
+  "description": "gifplay api",
+  "author": "Jhonata Rodrigues <jhonata.a.r@hotmail.com>",
+  "main": "server.js",
+  "scripts": {
+    "start": "nodemon index.js"
+  },
+  "dependencies": {
+    "express": "^4.16.1",
+    "nodemon": "^2.0.6"
+  }
+}
