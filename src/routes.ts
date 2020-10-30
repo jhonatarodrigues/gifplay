@@ -11,8 +11,6 @@ routes.get('/', (req, res) => {
 
 routes.get('/cameras', CamerasController.index)
 
-routes.get('/teste', (req, res) => {
-  return res.send('teste ')
-})
+routes.get('/teste', CamerasController.teste)
 
 export default routes
