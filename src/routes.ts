@@ -11,6 +11,6 @@ routes.get('/', (req, res) => {
 
 routes.get('/cameras', CamerasController.index)
 
-routes.get('/teste', CamerasController.teste)
+routes.get('/teste', CamerasController.buscaVideoCamera.bind(CamerasController))
 
 export default routes
