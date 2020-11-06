@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
-import Recorder, { RecorderEvents } from 'rtsp-video-recorder'
-import readline from 'readline'
+import { spawn } from 'child_process'
+import Kill from 'tree-kill'
 
 interface videoRtsp {
   ID: number,
@@ -18,75 +18,46 @@ class CamerasController {
   public async buscaVideoCamera (req: Request, res: Response):Promise<Response> {
     const name = 'Example cam'
     const IP = '192.168.15.13'
+    const comentArchive = '"gifplay video"'
 
     console.log('carai vei')
 
-    this.getVideoRtsp({
-      ID: 123,
-      nome: name,
-      IP,
-      porta: 5554
-    })
+    for (let i = 0; i < 1; i++) {
+      const args = [
+        '-i', `rtsp://${IP}:5554/`,
+        '-c:v', 'libx264',
+        '-map', '0',
+        '-preset', 'veryslow',
+        '-b', '100k',
+        '-r', '24', // -- frames
+        '-crf', '28', /// -- qualidade do video, default 23 quanto maior o numero pior a qualidade
+        '-threads', '2',
+        '-metadata', `title=${name}${i}`,
+        '-metadata', `comment=${comentArchive}`,
+        '-f', 'segment',
+        '-segment_time', '82800',
+        '-segment_format', 'mp4', '-an', `./videos/capture${i}-%03d.mp4`
+      ]
 
-    return res.json({ vaicarai: 1 })
-  }
+      const ffmpeg = spawn('ffmpeg', args)
 
-  private getVideoRtsp ({ ID, nome, IP, porta, usuario, senha }: videoRtsp): void {
-    const log = (event: string) => (...args: any[]) => {
-      console.log(new Date().toString())
-      console.log(`Event "${event}": `, ...args)
-      console.log()
-    }
-
-    readline.emitKeypressEvents(process.stdin)
-    if (process.stdin.isTTY) {
-      process.stdin.setRawMode(true)
-    }
-
-    try {
-      const filePattern = `${ID}-%Y.%m.%d-%H.%M.%S-${nome}`
-      const DESTINATION = './videos'
-      let url = `rtsp://${IP}:${porta}/`
-      if (usuario && senha) {
-        url = `rtsp://${usuario}:${senha}@${IP}:${porta}/`
-      }
-
-      const recorder = new Recorder(
-        url, DESTINATION,
-        {
-          title: nome,
-          segmentTime: global.camera.tempoMaximoDeCadaArquivo,
-          filePattern,
-          dirSizeThreshold: global.camera.tamanhoMaximoDeCadaArquivo,
-          autoClear: global.camera.limparAutomaticamente
-        }
-      )
-
-      recorder.on(RecorderEvents.STARTED, log(RecorderEvents.STARTED))
-        .on(RecorderEvents.STOPPED, log(RecorderEvents.STOPPED))
-        .on(RecorderEvents.ERROR, log(RecorderEvents.ERROR))
-        .on(RecorderEvents.SEGMENT_STARTED, log(RecorderEvents.SEGMENT_STARTED))
-        .on(RecorderEvents.FILE_CREATED, log(RecorderEvents.FILE_CREATED))
-        .on(RecorderEvents.STOP, log(RecorderEvents.STOP))
-        .on(RecorderEvents.PROGRESS, log(RecorderEvents.PROGRESS))
-        .on(RecorderEvents.SPACE_FULL, log(RecorderEvents.SPACE_FULL))
-        .on(RecorderEvents.SPACE_WIPED, log(RecorderEvents.SPACE_WIPED))
-        .start()
+      ffmpeg.stderr.setEncoding('utf8')
+      ffmpeg.stderr.on('data', (data) => {
+        console.log(data)
+      })
+      ffmpeg.stdout.on('data', function (data) {
+        console.log(data)
+      })
+      ffmpeg.on('close', function () {
+        console.log('finished')
+      })
 
       setTimeout(() => {
-        recorder
-          .on(RecorderEvents.STOPPED, () => {
-            setTimeout(() => {
-              console.log('Gracefully stopped.')
-              process.exit()
-            }, 2000)
-          })
-          .stop()
-      }, 10000)
-      console.log()
-    } catch (err) {
-      console.error(err)
+        Kill(ffmpeg.pid)
+      }, 60000)
     }
+
+    return res.json({ vaicarai: 1 })
   }
 }
 
