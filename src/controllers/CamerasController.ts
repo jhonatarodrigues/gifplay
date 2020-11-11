@@ -20,11 +20,13 @@ class CamerasController {
     const IP = '192.168.15.13'
     const comentArchive = '"gifplay video"'
 
-    console.log('carai vei')
-
     for (let i = 0; i < 1; i++) {
       const args = [
-        '-i', `rtsp://${IP}:5554/`,
+        '-rtsp_transport', 'tcp',
+        // '-i', `rtsp://${IP}:5554/`,
+        '-i', 'rtsp://api:Api1010G@poliesportes.ddns.net:1082/cam/realmonitor?channel=1&subtype=0',
+        '-c', 'copy',
+        '-timeout', '30000',
         '-c:v', 'libx264',
         '-map', '0',
         '-preset', 'veryslow',
@@ -57,7 +59,7 @@ class CamerasController {
       }, 60000)
     }
 
-    return res.json({ vaicarai: 1 })
+    return res.json({ response: 1 })
   }
 }
 

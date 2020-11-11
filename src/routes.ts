@@ -2,6 +2,7 @@ import { Router } from 'express'
 
 // -- controllers
 import CamerasController from './controllers/CamerasController'
+import CronController from './controllers/CronController'
 
 const routes = Router()
 
@@ -11,6 +12,6 @@ routes.get('/', (req, res) => {
 
 routes.get('/cameras', CamerasController.index)
 
-routes.get('/teste', CamerasController.buscaVideoCamera.bind(CamerasController))
+routes.get('/cron', CronController.index.bind(CronController))
 
 export default routes
