@@ -1,6 +1,8 @@
 import express from 'express'
 import cors from 'cors'
 import routes from './routes'
+import 'reflect-metadata'
+import * as bodyParser from 'body-parser'
 
 class App {
   public express: express.Application
@@ -12,7 +14,7 @@ class App {
   }
 
   private middlewares (): void {
-    this.express.use(express.json())
+    this.express.use(bodyParser.json())
     this.express.use(cors())
   }
 

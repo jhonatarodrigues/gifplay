@@ -1,13 +1,27 @@
 {
   "compilerOptions": {
-    "target": "es6",
+    "lib": [
+      "es5",
+      "es6"
+    ],
+    "target": "es5",
     "module": "commonjs",
-    "rootDir": "./src",
+    "moduleResolution": "node",
     "outDir": "./build",
+    "rootDir": "./src",
     "esModuleInterop": true,
     "strict": true,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
+    "sourceMap": true,
     "strictPropertyInitialization": false,
+    /* Experimental Options */
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
   },
+  "ts-node": {
+    "files": true
+  },
+  "files": [
+    "./src/server.ts",
+    "./src/types/global.d.ts"
+  ],
 }

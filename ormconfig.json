@@ -1,19 +1,42 @@
-{
-  "type": "mysql",
-  "host": "localhost",
-  "port": 3306,
-  "username": "root",
-  "password": "root",
-  "database": "gifplay",
-  "synchronize": true,
-  "logging": false,
-  "entities": [
-    "src/entity/**/*.ts"
-  ],
-  "migrations": [
-    "src/migration/**/*.ts"
-  ],
-  "subscribers": [
-    "src/subscriber/**/*.ts"
-  ]
-}
+[
+  {
+    "name": "default",
+    "type": "mysql",
+    "host": "localhost",
+    "port": 3306,
+    "username": "root",
+    "password": "root",
+    "database": "gifplay",
+    "synchronize": true,
+    "logging": false,
+    "entities": [
+      "src/entity/gifplay/**/*.ts"
+    ],
+    "migrations": [
+      "src/migration/gifplay/**/*.ts"
+    ],
+    "subscribers": [
+      "src/subscriber/gifplay/**/*.ts"
+    ]
+  },
+  {
+    "name": "log",
+    "type": "mysql",
+    "host": "localhost",
+    "port": 3306,
+    "username": "root",
+    "password": "root",
+    "database": "gifplay_log",
+    "synchronize": true,
+    "logging": false,
+    "entities": [
+      "src/entity/log/**/*.ts"
+    ],
+    "migrations": [
+      "src/migration/log/**/*.ts"
+    ],
+    "subscribers": [
+      "src/subscriber/log/**/*.ts"
+    ]
+  }
+]
