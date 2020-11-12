@@ -3,11 +3,13 @@ import cors from 'cors'
 import routes from './routes'
 import 'reflect-metadata'
 import * as bodyParser from 'body-parser'
+import DBController from './controllers/DBController'
 
 class App {
   public express: express.Application
 
   public constructor () {
+    DBController.connection()
     this.express = express()
     this.middlewares()
     this.routes()

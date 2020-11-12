@@ -5,7 +5,7 @@ export class Locations {
   @PrimaryGeneratedColumn({ type: 'int', name: 'id', unsigned: true })
   id: number;
 
-  @Column('int', { name: 'space_id', nullable: true })
+  @Column('int', { name: 'space_id' })
   spaceId: number | null;
 
   @Column('varchar', { name: 'player_email', nullable: true, length: 200 })

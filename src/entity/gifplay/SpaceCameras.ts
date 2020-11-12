@@ -5,7 +5,7 @@ export class SpaceCameras {
   @PrimaryGeneratedColumn({ type: 'int', name: 'id', unsigned: true })
   id: number;
 
-  @Column('int', { name: 'space_id', nullable: true })
+  @Column('int', { name: 'space_id' })
   spaceId: number | null;
 
   @Column('varchar', { name: 'camera_id', nullable: true, length: 350 })
