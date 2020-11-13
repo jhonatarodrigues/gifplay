@@ -2,8 +2,11 @@ import { createConnection, getConnection } from 'typeorm'
 import { SpaceCameras } from '../entity/gifplay/SpaceCameras'
 
 interface LeftJoin {
+  nameNewField: string,
+  table2Entity: any,
+  table2Name: string,
   condition: string,
-  table: string
+
 }
 interface IGet {
   table: string,
@@ -32,10 +35,8 @@ class DBController {
           .createQueryBuilder()
           .select(table)
           .from(entity, table)
-          // .leftJoinAndSelect(SpaceCameras, 'space_cameras', 'locations.spaceId = space_cameras.space_id')
-          .leftJoinAndMapMany('locations.spaceCameras', SpaceCameras, 'space_cameras', 'locations.spaceId = space_cameras.space_id')
-          // .where(where, paramsWhere || {})
-          // .getSql()
+          .leftJoinAndMapMany(leftJoin.nameNewField, leftJoin.table2Entity, leftJoin.table2Name, leftJoin.condition)
+          .where(where, paramsWhere || {})
           .getMany()
       } else {
         response = await getConnection()
@@ -51,7 +52,7 @@ class DBController {
           .createQueryBuilder()
           .select(table)
           .from(entity, table)
-          .leftJoinAndSelect(leftJoin.condition, leftJoin.table)
+          .leftJoinAndMapMany(leftJoin.nameNewField, leftJoin.table2Entity, leftJoin.table2Name, leftJoin.condition)
           .getMany()
       } else {
         response = await getConnection()
