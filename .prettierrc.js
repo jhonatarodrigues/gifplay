@@ -5,5 +5,6 @@ module.exports = {
   trailingComma: 'none',
   bracketSpacing: true,
   insertPragma: false,
-  embeddedLanguageFormatting: 'off'
+  embeddedLanguageFormatting: 'off',
+  spaceBeforeFunctionParen: true
 }
