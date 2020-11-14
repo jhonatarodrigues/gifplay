@@ -1,13 +1,13 @@
-import { Request, Response } from "express";
-import DBController from "./DBController";
-import moment from "moment";
-import CamsController from "./CamsController";
-import LogController from "./LogController";
+import {Request, Response} from 'express';
+import DBController from './DBController';
+import moment from 'moment';
+import CamsController from './CamsController';
+import LogController from './LogController';
 
 // -- entity
-import { Locations } from "../entity/gifplay/Locations";
-import { SpaceCameras } from "../entity/gifplay/SpaceCameras";
-import { Record } from "../entity/gifplay/Record";
+import {Locations} from '../entity/gifplay/Locations';
+import {SpaceCameras} from '../entity/gifplay/SpaceCameras';
+import {Record} from '../entity/gifplay/Record';
 
 interface IReceiveConcatCams extends Locations {
   spaceCameras: SpaceCameras[];
@@ -18,21 +18,21 @@ class CronController {
     await this.startRecordLocationsMovie();
     await this.stopRecordLocationsMovie();
 
-    return res.json({ response: moment().format("DD-MM-YYYY") });
+    return res.json({response: moment().format('DD-MM-YYYY')});
   }
 
   private async stopRecordLocationsMovie(): Promise<void> {
     // -- para as gravções se chegou o fim da locacao;
-    const dateNow = moment().format("Y-M-DD H:mm");
+    const dateNow = moment().format('Y-M-DD H:mm');
 
     const params = {
-      table: "record",
+      table: 'record',
       entity: Record,
       where: `date_end < "${dateNow}"`,
     };
     const record = await DBController.get(params);
     record.map((item: Record) => {
-      console.log("=== record ===", item);
+      console.log('=== record ===', item);
       if (item.pid) {
         CamsController.stopRecordMovie(item.pid);
       }
@@ -42,9 +42,9 @@ class CronController {
 
   private async startRecordLocationsMovie(): Promise<void> {
     // -- busca as locacoes e aciona a funcao para gravar os videos.
-    const dateNow = moment().format("Y-M-DD H:mm");
+    const dateNow = moment().format('Y-M-DD H:mm');
     const getParams = {
-      table: "locations",
+      table: 'locations',
       entity: Locations,
       where: `time_start <= "${dateNow}"
               AND time_end > "${dateNow}"
@@ -55,10 +55,10 @@ class CronController {
                 FROM record
                 WHERE  record.cam_id = space_cameras.id)`,
       leftJoin: {
-        nameNewField: "locations.spaceCameras",
+        nameNewField: 'locations.spaceCameras',
         table2Entity: SpaceCameras,
-        table2Name: "space_cameras",
-        condition: "locations.spaceId = space_cameras.space_id",
+        table2Name: 'space_cameras',
+        condition: 'locations.spaceId = space_cameras.space_id',
       },
     };
     const locations = await DBController.get(getParams);
@@ -66,7 +66,7 @@ class CronController {
     Promise.all(
       locations.map(async (location: IReceiveConcatCams) => {
         // -- dispara a funcao para gravar video de cada camera
-        const { spaceCameras } = location;
+        const {spaceCameras} = location;
 
         await spaceCameras.map((cam: SpaceCameras) => {
           if (
@@ -85,8 +85,8 @@ class CronController {
               port: cam.port,
               channel: cam.channelDefault,
               tcp: cam.tcp,
-              user: cam.userCam || "",
-              password: cam.passwordCam || "",
+              user: cam.userCam || '',
+              password: cam.passwordCam || '',
             });
 
             // --  log de inicio de gravação
@@ -114,14 +114,14 @@ class CronController {
               camId: cam.id,
               locationId: location.id,
               log:
-                "A camera não está cadastrada de forma correta, falta informações para buscar o video",
+                'A camera não está cadastrada de forma correta, falta informações para buscar o video',
             };
             LogController.setCamLog(params);
           }
         });
 
         return location;
-      })
+      }),
     ).then(() => {
       // -- incrementa os itens na tabela de record.
       const getParams = {

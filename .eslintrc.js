@@ -5,17 +5,15 @@ module.exports = {
     node: true,
   },
   extends: [
-    "plugin:@typescript-eslint/recommended",
-    "prettier/@typescript-eslint",
-    "standard",
+    'plugin:@typescript-eslint/recommended',
+    'prettier/@typescript-eslint',
+    'standard',
   ],
-  parser: "@typescript-eslint/parser",
+  parser: '@typescript-eslint/parser',
   parserOptions: {
     ecmaVersion: 12,
-    sourceType: "module",
+    sourceType: 'module',
   },
-  plugins: ["@typescript-eslint"],
-  rules: {
-    quotemark: [true, "double", "avoid-escape"],
-  },
+  plugins: ['@typescript-eslint'],
+  rules: {},
 };
