@@ -7,9 +7,25 @@ import LogController from './LogController'
 // -- entity
 import { Locations } from '../entity/gifplay/Locations'
 import { SpaceCameras } from '../entity/gifplay/SpaceCameras'
+import { Record } from '../entity/gifplay/Record'
+
+interface IReceiveConcatCams extends Locations {
+  spaceCameras: SpaceCameras[]
+}
 
 class CronController {
   public async index (req: Request, res: Response):Promise<Response> {
+    await this.startRecordLocationsMovie()
+    await this.stopRecordLocationsMovie()
+
+    return res.json({ response: moment().format('DD-MM-YYYY') })
+  }
+
+  private async stopRecordLocationsMovie (): Promise<void> {
+    // -- para as gravções se chegou o fim da locacao;
+  }
+
+  private async startRecordLocationsMovie (): Promise<void> {
     // -- busca as locacoes e aciona a funcao para gravar os videos.
     const dateNow = moment().format('Y-M-DD H:mm')
     const getParams = {
@@ -28,12 +44,12 @@ class CronController {
       }
     }
     const locations = await DBController.get(getParams)
-    locations.map((location:any) => {
+    const itensRecord:Record[] = []
+    Promise.all(locations.map(async (location:IReceiveConcatCams) => {
       // -- dispara a funcao para gravar video de cada camera
       const { spaceCameras } = location
 
-      spaceCameras.map((cam:SpaceCameras) => {
-        console.log('Cam ====', cam)
+      await spaceCameras.map((cam:SpaceCameras) => {
         if (location.id &&
           cam.id &&
           cam.cameraAlias &&
@@ -58,11 +74,21 @@ class CronController {
           pidCam.then(pid => {
             const params = {
               camId: cam.id,
-              locationId: parseInt(location.id, 10),
+              locationId: location.id,
               log: `iniciando gravação da camera, pid: ${pid}`,
               success: true
             }
             LogController.setCamLog(params)
+
+            // -- acrescenta um novo registro na tabela record
+            const itemRecord: Record = {
+              locationId: location.id,
+              camId: cam.id,
+              dateStart: location.timeStart,
+              dateEnd: location.timeEnd,
+              pid: pid
+            }
+            itensRecord.push(itemRecord)
           })
         } else {
           const params = {
@@ -75,9 +101,14 @@ class CronController {
       })
 
       return location
+    })).then(() => {
+      // -- incrementa os itens na tabela de record.
+      const getParams = {
+        entity: Record,
+        data: itensRecord
+      }
+      DBController.set(getParams)
     })
-
-    return res.json({ response: dateNow })
   }
 }
 

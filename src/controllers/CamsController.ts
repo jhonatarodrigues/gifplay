@@ -1,6 +1,7 @@
 import { Request, Response } from 'express'
 import { spawn } from 'child_process'
 import Kill from 'tree-kill'
+import LogController from './LogController'
 
 interface videoRtsp {
   LocationID: number,
@@ -26,7 +27,6 @@ class CamsController {
 
   public async getMovieCam ({ LocationID, ID, name, IP, port, channel, tcp, user, password }:videoRtsp):Promise<number> {
     const comentArchive = `"gifplay video - ${ID} "`
-
     const userPassword = user && password ? `${user}:${password}@` : ''
     const url = `rtsp://${userPassword}${IP}:${port}${channel}`
     const concatNameArchive = this.tratName(`${name}${ID}${LocationID}`)
@@ -61,23 +61,24 @@ class CamsController {
     // -- ffmpeg através de preocessos
     const ffmpeg = spawn('ffmpeg', args)
     ffmpeg.stderr.setEncoding('utf8')
-    // ffmpeg.stderr.on('data', (data) => {
-    //   console.log(data)
-    // })
-    // ffmpeg.stdout.on('data', function (data) {
-    //   console.log(data)
-    // })
-    // ffmpeg.on('close', function () {
-    //   console.log('finished')
-    // })
-
-    ffmpeg.on('error', function (err) {
+    ffmpeg.on('error', (err) => {
       // -- error process
-      console.log('error process: ', err)
+      const params = {
+        camId: ID,
+        locationId: LocationID,
+        log: `ffmpeg: erro na gravação da camera, error: ${err}`
+      }
+      LogController.setCamLog(params)
     })
-    ffmpeg.on('close', function (code) {
+    ffmpeg.on('close', (code) => {
       // -- close process
-      console.log('close', code)
+      const params = {
+        camId: ID,
+        locationId: LocationID,
+        log: `fim da gravação da camera, pid: ${ffmpeg.pid}, code: ${code}`,
+        success: true
+      }
+      LogController.setCamLog(params)
     })
 
     setTimeout(() => {

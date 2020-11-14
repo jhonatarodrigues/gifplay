@@ -20,9 +20,6 @@ export class SpaceCameras {
   @Column('varchar', { name: 'status', nullable: true, length: 250 })
   status: string | null;
 
-  @Column('boolean', { name: 'record', default: false })
-  record: boolean;
-
   @Column('varchar', { name: 'ip', nullable: true, length: 45 })
   ip: string | null;
 
