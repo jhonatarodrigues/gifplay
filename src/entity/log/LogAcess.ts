@@ -1,7 +1,7 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
 
-@Entity('logs', { schema: 'gifplay_log' })
-export class Logs {
+@Entity('log_acess', { schema: 'gifplay_log' })
+export class LogAcess {
   @PrimaryGeneratedColumn({ type: 'int', name: 'id', unsigned: true })
   id: number;
 

@@ -72,11 +72,12 @@ class CamsController {
     // })
 
     ffmpeg.on('error', function (err) {
-      console.log(err)
+      // -- error process
+      console.log('error process: ', err)
     })
     ffmpeg.on('close', function (code) {
-      console.log('IM HERE')
-      console.log('close')
+      // -- close process
+      console.log('close', code)
     })
 
     setTimeout(() => {

@@ -54,6 +54,8 @@ class CronController {
             }
           )
           console.log('pidCam ===', pidCam)
+        } else {
+          // -- camera não está cadastrada de forma correta
         }
       })
 

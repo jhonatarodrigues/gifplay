@@ -1,5 +1,4 @@
 import { createConnection, getConnection } from 'typeorm'
-import { SpaceCameras } from '../entity/gifplay/SpaceCameras'
 
 interface LeftJoin {
   nameNewField: string,
@@ -26,8 +25,6 @@ class DBController {
   }
 
   public async get ({ table, entity, where, paramsWhere, leftJoin }:IGet): Promise<any> {
-    console.log('haoba')
-
     let response = null
     if (where) {
       if (leftJoin) {
