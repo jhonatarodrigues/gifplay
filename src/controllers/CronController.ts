@@ -1,13 +1,13 @@
-import {Request, Response} from 'express';
+import { Request, Response } from 'express';
 import DBController from './DBController';
 import moment from 'moment';
 import CamsController from './CamsController';
 import LogController from './LogController';
 
 // -- entity
-import {Locations} from '../entity/gifplay/Locations';
-import {SpaceCameras} from '../entity/gifplay/SpaceCameras';
-import {Record} from '../entity/gifplay/Record';
+import { Locations } from '../entity/gifplay/Locations';
+import { SpaceCameras } from '../entity/gifplay/SpaceCameras';
+import { Record } from '../entity/gifplay/Record';
 
 interface IReceiveConcatCams extends Locations {
   spaceCameras: SpaceCameras[];
@@ -18,7 +18,7 @@ class CronController {
     await this.startRecordLocationsMovie();
     await this.stopRecordLocationsMovie();
 
-    return res.json({response: moment().format('DD-MM-YYYY')});
+    return res.json({ response: moment().format('DD-MM-YYYY') });
   }
 
   private async stopRecordLocationsMovie(): Promise<void> {
@@ -66,7 +66,7 @@ class CronController {
     Promise.all(
       locations.map(async (location: IReceiveConcatCams) => {
         // -- dispara a funcao para gravar video de cada camera
-        const {spaceCameras} = location;
+        const { spaceCameras } = location;
 
         await spaceCameras.map((cam: SpaceCameras) => {
           if (
