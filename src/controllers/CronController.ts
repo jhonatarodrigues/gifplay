@@ -1,8 +1,9 @@
 import { Request, Response } from 'express'
 import DBController from './DBController'
-import moment from 'moment'
+import moment from 'moment-timezone'
 import CamsController from './CamsController'
 import LogController from './LogController'
+import cron from 'node-cron'
 
 // -- entity
 import { Locations } from '../entity/gifplay/Locations'
@@ -14,16 +15,21 @@ interface IReceiveConcatCams extends Locations {
 }
 
 class CronController {
-  public async index(req: Request, res: Response): Promise<Response> {
+  constructor() {
+    cron.schedule('* * * * *', async () => {
+      // -- Executando a tarefa a cada 1 minuto
+      console.log('Executando a tarefa a cada 1 minuto')
+      await this.index()
+    })
+  }
+  public async index(): Promise<void> {
     await this.startRecordLocationsMovie()
     await this.stopRecordLocationsMovie()
-
-    return res.json({ response: moment().format('DD-MM-YYYY') })
   }
 
   private async stopRecordLocationsMovie(): Promise<void> {
     // -- para as gravções se chegou o fim da locacao;
-    const dateNow = moment().format('Y-M-DD H:mm')
+    const dateNow = moment().format('YYYY-MM-DD HH:mm')
 
     const params = {
       table: 'record',
@@ -32,9 +38,13 @@ class CronController {
     }
     const record = await DBController.get(params)
     record.map((item: Record) => {
-      console.log('=== record ===', item)
       if (item.pid) {
         CamsController.stopRecordMovie(item.pid)
+        const paramsDelete = {
+          entity: Record,
+          where: `id = ${item.id}`
+        }
+        DBController.delete(paramsDelete)
       }
       return item
     })
@@ -42,7 +52,7 @@ class CronController {
 
   private async startRecordLocationsMovie(): Promise<void> {
     // -- busca as locacoes e aciona a funcao para gravar os videos.
-    const dateNow = moment().format('Y-M-DD H:mm')
+    const dateNow = moment().format('YYYY-MM-DD HH:mm')
     const getParams = {
       table: 'locations',
       entity: Locations,

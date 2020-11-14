@@ -1,22 +1,22 @@
 import DBController from './DBController'
 import { LogCams } from '../entity/log/LogCams'
-import moment from 'moment'
+import moment from 'moment-timezone'
 
-interface ISetCamLog{
-  camId: number,
-  locationId: number,
-  log: string,
+interface ISetCamLog {
+  camId: number
+  locationId: number
+  log: string
   success?: boolean
 }
 
 class LogController {
-  public async connection ():Promise<void> {
-    console.log('log controller ===')
-  }
-
-  public async setCamLog ({ camId, locationId, log, success }:ISetCamLog): Promise<any> {
+  public async setCamLog({
+    camId,
+    locationId,
+    log,
+    success
+  }: ISetCamLog): Promise<any> {
     // -- incrementa o log de cameras
-    // const dateNow = moment().format('Y-M-DD H:mm')
 
     const content = {
       log

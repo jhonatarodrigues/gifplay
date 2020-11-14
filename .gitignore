@@ -2,8 +2,6 @@
 
 .vscode/
 
-node_modules/
-
 build/
 
 tmp/
@@ -20,3 +18,10 @@ videos
 
 # VSCode
 .vscode
+
+# node.js
+#
+node_modules/
+node_modules_bak/
+npm-debug.log
+yarn-error.log

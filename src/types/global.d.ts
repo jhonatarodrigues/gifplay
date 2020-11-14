@@ -1,11 +1,12 @@
 // -- cams
 declare namespace NodeJS {
   interface Global {
-      camera: {
-        diretorioPasta: string,
-        tempoMaximoDeCadaArquivo: string,
-        tamanhoMaximoDeCadaArquivo: string,
-        limparAutomaticamente: boolean
-      }
+    camera: {
+      outputFolder: string
+      timeout: string
+      maxTimeRecord: string
+      videoQuality: string
+      fps: string
+    }
   }
 }
