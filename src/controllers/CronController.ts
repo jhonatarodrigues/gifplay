@@ -2,6 +2,7 @@ import { Request, Response } from 'express'
 import DBController from './DBController'
 import moment from 'moment'
 import CamsController from './CamsController'
+import LogController from './LogController'
 
 // -- entity
 import { Locations } from '../entity/gifplay/Locations'
@@ -27,13 +28,12 @@ class CronController {
       }
     }
     const locations = await DBController.get(getParams)
-
     locations.map((location:any) => {
       // -- dispara a funcao para gravar video de cada camera
       const { spaceCameras } = location
 
       spaceCameras.map((cam:SpaceCameras) => {
-        console.log('aaaaa ====', cam)
+        console.log('Cam ====', cam)
         if (location.id &&
           cam.id &&
           cam.cameraAlias &&
@@ -53,9 +53,24 @@ class CronController {
               password: cam.passwordCam || ''
             }
           )
-          console.log('pidCam ===', pidCam)
+
+          // --  log de inicio de gravação
+          pidCam.then(pid => {
+            const params = {
+              camId: cam.id,
+              locationId: parseInt(location.id, 10),
+              log: `iniciando gravação da camera, pid: ${pid}`,
+              success: true
+            }
+            LogController.setCamLog(params)
+          })
         } else {
-          // -- camera não está cadastrada de forma correta
+          const params = {
+            camId: cam.id,
+            locationId: location.id,
+            log: 'A camera não está cadastrada de forma correta, falta informações para buscar o video'
+          }
+          LogController.setCamLog(params)
         }
       })
 

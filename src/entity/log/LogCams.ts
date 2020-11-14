@@ -16,4 +16,7 @@ export class LogCams {
 
   @Column('datetime', { name: 'date' })
   date: Date;
+
+  @Column('int', { name: 'code', comment: '0 = error, 1 = sucess', default: 0 })
+  code: number;
 }
