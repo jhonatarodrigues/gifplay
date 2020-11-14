@@ -121,7 +121,7 @@ class CronController {
         });
 
         return location;
-      }),
+      })
     ).then(() => {
       // -- incrementa os itens na tabela de record.
       const getParams = {
