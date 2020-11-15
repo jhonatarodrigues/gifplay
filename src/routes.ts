@@ -1,7 +1,7 @@
 import { Router } from 'express'
 
 // -- controllers
-import CamsController from './controllers/CamsController'
+import VideoController from './controllers/VideoController'
 
 const routes = Router()
 
@@ -9,6 +9,7 @@ routes.get('/', (req, res) => {
   return res.send('hello demorando ')
 })
 
-routes.get('/cameras', CamsController.index)
+//-- video
+routes.get('/video/:locationId', VideoController.getVideo)
 
 export default routes

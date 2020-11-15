@@ -1,6 +1,9 @@
 import DBController from './DBController'
-import { LogCams } from '../entity/log/LogCams'
 import moment from 'moment-timezone'
+
+// -- entity
+import { LogCams } from '../entity/log/LogCams'
+import { LogAcess } from '../entity/log/LogAcess'
 
 interface ISetCamLog {
   camId: number
@@ -30,6 +33,24 @@ class LogController {
           content: JSON.stringify(content),
           date: moment().format('YYYY-MM-DD HH:mm:ss'),
           code: success ? 1 : 0
+        }
+      ],
+      db: 'log'
+    }
+    const logCams = await DBController.set(getParams)
+
+    return logCams
+  }
+  public async setAcessLog(content: any, route: string): Promise<any> {
+    // -- incrementa o log de acesso
+
+    const getParams = {
+      entity: LogAcess,
+      data: [
+        {
+          route,
+          content: JSON.stringify(content),
+          date: moment().format('YYYY-MM-DD HH:mm:ss')
         }
       ],
       db: 'log'

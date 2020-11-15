@@ -5,3 +5,5 @@ global.camera = {
   videoQuality: '28', // -- quanto maior o numero pior a qualidade
   fps: '24'
 }
+
+global.url = 'http://localhost:8080'

@@ -19,7 +19,12 @@ class CamsController {
     return res.json({ type: 1 })
   }
 
-  private tratName(val: string): string {
+  public generateNameArchive(
+    name: string,
+    id: number,
+    locationId: number
+  ): string {
+    const val = `${name}${id}${locationId}`
     const newVal = val.toLowerCase().replace(/[^a-zA-Z0-9]/g, '')
 
     return newVal
@@ -39,7 +44,7 @@ class CamsController {
     const comentArchive = `"gifplay video - ${ID} "`
     const userPassword = user && password ? `${user}:${password}@` : ''
     const url = `rtsp://${userPassword}${IP}:${port}${channel}`
-    const concatNameArchive = this.tratName(`${name}${ID}${LocationID}`)
+    const concatNameArchive = this.generateNameArchive(name, ID, LocationID)
 
     let tcpTransport: any[] = []
     if (tcp) {

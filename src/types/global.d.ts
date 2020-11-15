@@ -8,5 +8,6 @@ declare namespace NodeJS {
       videoQuality: string
       fps: string
     }
+    url: string
   }
 }
