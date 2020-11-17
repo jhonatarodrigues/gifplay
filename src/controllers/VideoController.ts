@@ -18,6 +18,7 @@ interface ICams {
   camAlias: string
   nameArchive: string
   fileUrl: string
+  thumbs: string[]
 }
 
 interface IItensResponseVideo {
@@ -69,13 +70,11 @@ class VideoController {
     console.log(locations)
 
     if (locations.length <= 0) {
-      return res
-        .status(200)
-        .json({
-          status: 200,
-          msg:
-            'Não foi possivel encontrar nenhuma locação com esse id ou a locação está em andamento'
-        })
+      return res.status(200).json({
+        status: 200,
+        msg:
+          'Não foi possivel encontrar nenhuma locação com esse id ou a locação está em andamento'
+      })
     }
 
     const responseItens: IItensResponseVideo[] = []
@@ -113,11 +112,25 @@ class VideoController {
                 LogController.setAcessLog(paramsError, '/videos/:locationId')
                 camUrl = 'error: Não encontramos o arquivo'
               })
+
+            // -- busca as thumbs existentes
+            let thumbs: string[] = []
+            if (cam.cameraId && cam.cameraAlias && location.id) {
+              await CamsController.getThumbs(
+                cam.cameraAlias,
+                cam.id,
+                location.id
+              ).then((response: string[]) => {
+                thumbs = response
+              })
+            }
+
             videos.push({
               camId: cam.cameraId || '',
               camAlias: cam.cameraAlias || '',
               nameArchive: name,
-              fileUrl: camUrl
+              fileUrl: camUrl,
+              thumbs
             })
 
             let itemExist = false
