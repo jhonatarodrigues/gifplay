@@ -33,6 +33,39 @@ class CamsController {
     return newVal
   }
 
+  public async getCutVideo(
+    name: string,
+    camId: number,
+    locationId: number,
+    startCut: number,
+    endCut: number
+  ): Promise<string> {
+    const concatNameArchive = `${this.generateNameArchive(
+      name,
+      camId,
+      locationId
+    )}`
+
+    const start = moment(moment().format('YYYY-MM-DD')).add(startCut, 'seconds')
+    const end = moment(moment().format('YYYY-MM-DD')).add(endCut, 'seconds')
+    const archiveCutName = `${concatNameArchive}-000_${String(start).replace(
+      /[^0-9]+/g,
+      ''
+    )}-${String(end).replace(/[^0-9]+/g, '')}.mp4`
+    const videoFinal = `${global.camera.cut}${archiveCutName}`
+    let urlVideo = ''
+    await fs.promises
+      .access(videoFinal)
+      .then((response) => {
+        urlVideo = `${global.url}/${videoFinal.replace('./', '')}`
+      })
+      .catch(() => {
+        /* == file not exist */
+      })
+
+    return urlVideo
+  }
+
   public async cutVideo(
     name: string,
     camId: number,
@@ -64,17 +97,18 @@ class CamsController {
       .add(secondsAfterStart, 'seconds')
       .format('HH:mm:ss')
     const videoFinal = `${global.camera.cut}${archiveCutName}`
-    let msgVideoExiste = ''
-    await fs.promises
-      .access(videoFinal)
-      .then((response) => {
-        msgVideoExiste = `O Video já está cortado, acesse o end-point de request e busque-o`
-      })
-      .catch(() => {
-        /* == file not exist */
-      })
+    let msgVideoExiste = await this.getCutVideo(
+      name,
+      camId,
+      locationId,
+      startCut,
+      endCut
+    )
     if (msgVideoExiste) {
-      return { status: 200, msg: msgVideoExiste }
+      return {
+        status: 200,
+        msg: `O Video já está cortado, acesse o end-point de request e busque-o`
+      }
     }
 
     if (secondsAfterStart > global.camera.maxTimeCutSeconds) {

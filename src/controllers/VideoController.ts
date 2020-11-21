@@ -31,6 +31,43 @@ interface IItensResponseVideo {
 }
 
 class VideoController {
+  public async getVideoCut(req: Request, res: Response): Promise<Response> {
+    const params = req.query
+
+    if (
+      !params.cam ||
+      !params.location ||
+      !params.timeStartCut ||
+      !params.timeEndCut ||
+      !params.camAlias
+    ) {
+      return res.status(203).json({
+        msg:
+          'você precisa enviar todos os parametros (cam, location, timeStartCut, timeEndCut)'
+      })
+    }
+
+    let fileUrl = ''
+    await CamsController.getCutVideo(
+      String(params.camAlias),
+      parseInt(String(params.cam), 10),
+      parseInt(String(params.location), 10),
+      parseInt(String(params.timeStartCut), 10),
+      parseInt(String(params.timeEndCut), 10)
+    ).then((response) => {
+      fileUrl = response
+    })
+
+    if (!fileUrl) {
+      return res
+        .status(400)
+        .json({
+          msg: 'Não encontramos o video, por favor verifique os parametros.'
+        })
+    }
+
+    return res.status(200).json({ fileUrl })
+  }
   public async setVideoCut(req: Request, res: Response): Promise<Response> {
     const params = req.query
 
@@ -41,12 +78,10 @@ class VideoController {
       !params.timeEndCut ||
       !params.camAlias
     ) {
-      return res
-        .status(203)
-        .json({
-          msg:
-            'você precisa enviar todos os parametros (cam, location, timeStartCut, timeEndCut)'
-        })
+      return res.status(203).json({
+        msg:
+          'você precisa enviar todos os parametros (cam, location, timeStartCut, timeEndCut)'
+      })
     }
 
     const getParams = {
