@@ -7,6 +7,7 @@ import fs from 'fs'
 
 // -- entity
 import { Locations } from '../entity/gifplay/Locations'
+import { Record } from '../entity/gifplay/Record'
 import { SpaceCameras } from '../entity/gifplay/SpaceCameras'
 
 interface IReceiveConcatCams extends Locations {
@@ -30,6 +31,61 @@ interface IItensResponseVideo {
 }
 
 class VideoController {
+  public async setVideoCut(req: Request, res: Response): Promise<Response> {
+    const params = req.query
+
+    if (
+      !params.cam ||
+      !params.location ||
+      !params.timeStartCut ||
+      !params.timeEndCut ||
+      !params.camAlias
+    ) {
+      return res
+        .status(203)
+        .json({
+          msg:
+            'você precisa enviar todos os parametros (cam, location, timeStartCut, timeEndCut)'
+        })
+    }
+
+    const getParams = {
+      table: 'record',
+      entity: Record,
+      where: `cam_id = :id and location_id = :location`,
+      paramsWhere: { id: params.cam, location: params.location }
+    }
+    const record = await DBController.get(getParams)
+    if (record.length > 0) {
+      return res
+        .status(206)
+        .json({ msg: 'Esse video não pode ser cortado, ele está em gravação.' })
+    }
+    let statusResponseCut = 0
+    let mensagemResponseCut = ''
+
+    await CamsController.cutVideo(
+      String(params.camAlias),
+      parseInt(String(params.cam), 10),
+      parseInt(String(params.location), 10),
+      parseInt(String(params.timeStartCut), 10),
+      parseInt(String(params.timeEndCut), 10)
+    ).then((response) => {
+      if (response) {
+        statusResponseCut = response.status
+        mensagemResponseCut = response.msg
+      }
+    })
+
+    if (statusResponseCut) {
+      return res.status(statusResponseCut).json({ msg: mensagemResponseCut })
+    }
+
+    return res
+      .status(200)
+      .json({ msg: 'em processo de corte, aguarde para fazer o donwload.' })
+  }
+
   public async getVideo(req: Request, res: Response): Promise<Response> {
     const { params } = req
     let whereId: string[] = []
@@ -41,13 +97,12 @@ class VideoController {
     }
 
     if (whereId.length === 0) {
-      return res.json({
+      return res.status(400).json({
         status: 400,
         msg: 'You need send parameter number bigger then 0, ex: /10'
       })
     }
 
-    console.log('=== params ===', params)
     const dateNow = moment().format('YYYY-MM-DD HH:mm')
     const getParams = {
       table: 'locations',
@@ -66,8 +121,6 @@ class VideoController {
       }
     }
     const locations = await DBController.get(getParams)
-
-    console.log(locations)
 
     if (locations.length <= 0) {
       return res.status(200).json({
@@ -163,7 +216,7 @@ class VideoController {
       })
     )
 
-    return res.json(responseItens)
+    return res.status(200).json(responseItens)
   }
 }
 

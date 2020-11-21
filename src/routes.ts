@@ -18,6 +18,7 @@ routes.get('/', (req, res) => {
 })
 
 //-- video
+routes.get('/video/cut', VideoController.setVideoCut)
 routes.get('/video/:locationId', VideoController.getVideo)
 
 routes.get('*', function (req, res) {
