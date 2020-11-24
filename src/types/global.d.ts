@@ -10,6 +10,7 @@ declare namespace NodeJS {
       videoQuality: string
       fps: string
       maxTimeCutSeconds: number
+      removeCutVideoTime: number
     }
     url: string
   }

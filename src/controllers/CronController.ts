@@ -1,9 +1,10 @@
-import { Request, Response } from 'express'
 import DBController from './DBController'
 import moment from 'moment-timezone'
 import CamsController from './CamsController'
 import LogController from './LogController'
 import cron from 'node-cron'
+import { Request, Response } from 'express'
+import fs from 'fs'
 
 // -- entity
 import { Locations } from '../entity/gifplay/Locations'
@@ -21,10 +22,52 @@ class CronController {
       console.log('Executando a tarefa a cada 1 minuto')
       await this.index()
     })
+
+    cron.schedule('0 0 */1 * *', async () => {
+      // -- executa uma vez por dia.
+      console.log('Executando a tarefa 2')
+      this.clearCut()
+    })
   }
-  public async index(): Promise<void> {
+
+  private async index(): Promise<void> {
     await this.startRecordLocationsMovie()
     await this.stopRecordLocationsMovie()
+  }
+
+  private async clearCut(): Promise<void> {
+    fs.readdir(global.camera.cut, (_, files) => {
+      if (!files) {
+        return false
+      }
+      files.forEach((file: string) => {
+        const archiveExtension = String(file.split('.').pop())
+
+        if (archiveExtension && archiveExtension.toLowerCase() === 'mp4') {
+          const fileDirectory = `${global.camera.cut}${file}`
+          fs.stat(`${global.camera.cut}${file}`, (err, status) => {
+            if (err) {
+              throw err
+            }
+
+            const dateFile = moment(status.mtime)
+            const dateRemoveFile = moment().subtract(
+              global.camera.removeCutVideoTime,
+              'd'
+            )
+
+            if (dateFile <= dateRemoveFile) {
+              try {
+                // -- removeu arquivo
+                fs.unlinkSync(fileDirectory)
+              } catch (err) {
+                console.error('error: ', err)
+              }
+            }
+          })
+        }
+      })
+    })
   }
 
   private async stopRecordLocationsMovie(): Promise<void> {
