@@ -5,6 +5,8 @@ import LogController from './LogController'
 import { getVideoDurationInSeconds } from 'get-video-duration'
 import fs from 'fs'
 import moment from 'moment-timezone'
+import DBController from './DBController'
+import { Record } from '../entity/gifplay/Record'
 
 interface videoRtsp {
   LocationID: number
@@ -16,6 +18,11 @@ interface videoRtsp {
   tcp: boolean
   user?: string
   password?: string
+}
+
+interface returnCutVideo {
+  status: number
+  msg: string
 }
 class CamsController {
   public async index(req: Request, res: Response): Promise<Response> {
@@ -38,7 +45,7 @@ class CamsController {
     camId: number,
     locationId: number,
     startCut: number,
-    endCut: number
+    secondsCut: number
   ): Promise<string> {
     const concatNameArchive = `${this.generateNameArchive(
       name,
@@ -47,16 +54,18 @@ class CamsController {
     )}`
 
     const start = moment(moment().format('YYYY-MM-DD')).add(startCut, 'seconds')
-    const end = moment(moment().format('YYYY-MM-DD')).add(endCut, 'seconds')
-    const archiveCutName = `${concatNameArchive}-000_${String(start).replace(
+    const end = moment(moment().format('YYYY-MM-DD')).add(secondsCut, 'seconds')
+    const archiveCutName = `${concatNameArchive}-000_${String(
+      start.format('HH-mm-ss')
+    ).replace(/[^0-9]+/g, '')}-${String(end.format('HH-mm-ss')).replace(
       /[^0-9]+/g,
       ''
-    )}-${String(end).replace(/[^0-9]+/g, '')}.mp4`
+    )}.mp4`
     const videoFinal = `${global.camera.cut}${archiveCutName}`
     let urlVideo = ''
     await fs.promises
       .access(videoFinal)
-      .then((response) => {
+      .then(() => {
         urlVideo = `${global.url}/${videoFinal.replace('./', '')}`
       })
       .catch(() => {
@@ -71,8 +80,8 @@ class CamsController {
     camId: number,
     locationId: number,
     startCut: number,
-    endCut: number
-  ): Promise<any> {
+    secondsCut: number
+  ): Promise<returnCutVideo> {
     const concatNameArchive = `${this.generateNameArchive(
       name,
       camId,
@@ -81,33 +90,33 @@ class CamsController {
     const params = {
       camId: camId,
       locationId: locationId,
-      log: `Inicio de corte de video: ${concatNameArchive}, start:${startCut}, end: ${endCut}`,
+      log: `Inicio de corte de video: ${concatNameArchive}, start:${startCut}, end: ${secondsCut}`,
       success: true
     }
     LogController.setCamLog(params)
 
     const start = moment(moment().format('YYYY-MM-DD')).add(startCut, 'seconds')
-    const end = moment(moment().format('YYYY-MM-DD')).add(endCut, 'seconds')
-    const archiveCutName = `${concatNameArchive}-000_${String(start).replace(
+    const end = moment(moment().format('YYYY-MM-DD')).add(secondsCut, 'seconds')
+    const archiveCutName = `${concatNameArchive}-000_${String(
+      start.format('HH-mm-ss')
+    ).replace(/[^0-9]+/g, '')}-${String(end.format('HH-mm-ss')).replace(
       /[^0-9]+/g,
       ''
-    )}-${String(end).replace(/[^0-9]+/g, '')}.mp4`
-    const secondsAfterStart = end.diff(start, 'seconds')
-    const dateSecondsAfterStart = moment(moment().format('YYYY-MM-DD'))
-      .add(secondsAfterStart, 'seconds')
-      .format('HH:mm:ss')
+    )}.mp4`
+    const secondsAfterStart = end.seconds()
+    const dateSecondsAfterStart = end.format('HH:mm:ss')
     const videoFinal = `${global.camera.cut}${archiveCutName}`
-    let msgVideoExiste = await this.getCutVideo(
+    const msgVideoExiste = await this.getCutVideo(
       name,
       camId,
       locationId,
       startCut,
-      endCut
+      secondsCut
     )
     if (msgVideoExiste) {
       return {
         status: 200,
-        msg: `O Video já está cortado, acesse o end-point de request e busque-o`
+        msg: 'O Video já está cortado, acesse o end-point de request e busque-o'
       }
     }
 
@@ -143,11 +152,11 @@ class CamsController {
       }
       LogController.setCamLog(params)
     })
-    ffmpeg.on('close', (code) => {
+    ffmpeg.on('close', () => {
       const params = {
         camId: camId,
         locationId: locationId,
-        log: `Fim do corte do video: ${concatNameArchive}, start:${startCut}, end: ${endCut}`,
+        log: `Fim do corte do video: ${concatNameArchive}, start:${startCut}, end: ${secondsCut}`,
         success: true
       }
       LogController.setCamLog(params)
@@ -177,7 +186,7 @@ class CamsController {
 
       await fs.promises
         .access(path)
-        .then((response) => {
+        .then(() => {
           // achou o arquivo
           const local = `${global.url}/${path.replace('./', '')}`
           arrayThumbs.push(local)
@@ -226,8 +235,8 @@ class CamsController {
           `${global.camera.outputFolder}${concatNameArchive}.mp4`,
           '-ss',
           `${tempo}`,
-          `-vframes`,
-          `1`,
+          '-vframes',
+          '1',
           `${global.camera.thumbs}${concatNameArchive}_${numArchive}.jpg`
         ]
 
@@ -243,7 +252,7 @@ class CamsController {
           }
           LogController.setCamLog(params)
         })
-        ffmpeg.on('close', (code) => {
+        ffmpeg.on('close', () => {
           const params = {
             camId: id,
             locationId: locationId,
@@ -274,7 +283,7 @@ class CamsController {
     const url = `rtsp://${userPassword}${IP}:${port}${channel}`
     const concatNameArchive = this.generateNameArchive(name, ID, LocationID)
 
-    let tcpTransport: any[] = []
+    let tcpTransport: string[] = []
     if (tcp) {
       tcpTransport = ['-rtsp_transport', 'tcp']
     }
@@ -328,6 +337,13 @@ class CamsController {
     })
     ffmpeg.on('close', (code) => {
       // -- close process
+      if (code !== 255) {
+        const paramsDelete = {
+          entity: Record,
+          where: `pid = ${ffmpeg.pid}`
+        }
+        DBController.delete(paramsDelete)
+      }
       const params = {
         camId: ID,
         locationId: LocationID,
@@ -335,9 +351,11 @@ class CamsController {
         success: true
       }
       LogController.setCamLog(params)
-      setTimeout(() => {
-        this.generateThumbs(name, ID, LocationID)
-      }, 30000)
+      if (code === 255) {
+        setTimeout(() => {
+          this.generateThumbs(name, ID, LocationID)
+        }, 30000)
+      }
     })
 
     return ffmpeg.pid

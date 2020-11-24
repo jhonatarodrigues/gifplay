@@ -38,12 +38,12 @@ class VideoController {
       !params.cam ||
       !params.location ||
       !params.timeStartCut ||
-      !params.timeEndCut ||
+      !params.secondsCut ||
       !params.camAlias
     ) {
       return res.status(203).json({
         msg:
-          'você precisa enviar todos os parametros (cam, location, timeStartCut, timeEndCut)'
+          'você precisa enviar todos os parametros (cam, location, timeStartCut, secondsCut)'
       })
     }
 
@@ -53,21 +53,20 @@ class VideoController {
       parseInt(String(params.cam), 10),
       parseInt(String(params.location), 10),
       parseInt(String(params.timeStartCut), 10),
-      parseInt(String(params.timeEndCut), 10)
+      parseInt(String(params.secondsCut), 10)
     ).then((response) => {
       fileUrl = response
     })
 
     if (!fileUrl) {
-      return res
-        .status(400)
-        .json({
-          msg: 'Não encontramos o video, por favor verifique os parametros.'
-        })
+      return res.status(400).json({
+        msg: 'Não encontramos o video, por favor verifique os parametros.'
+      })
     }
 
     return res.status(200).json({ fileUrl })
   }
+
   public async setVideoCut(req: Request, res: Response): Promise<Response> {
     const params = req.query
 
@@ -75,19 +74,19 @@ class VideoController {
       !params.cam ||
       !params.location ||
       !params.timeStartCut ||
-      !params.timeEndCut ||
+      !params.secondsCut ||
       !params.camAlias
     ) {
       return res.status(203).json({
         msg:
-          'você precisa enviar todos os parametros (cam, location, timeStartCut, timeEndCut)'
+          'você precisa enviar todos os parametros (cam, location, timeStartCut, secondsCut)'
       })
     }
 
     const getParams = {
       table: 'record',
       entity: Record,
-      where: `cam_id = :id and location_id = :location`,
+      where: 'cam_id = :id and location_id = :location',
       paramsWhere: { id: params.cam, location: params.location }
     }
     const record = await DBController.get(getParams)
@@ -104,7 +103,7 @@ class VideoController {
       parseInt(String(params.cam), 10),
       parseInt(String(params.location), 10),
       parseInt(String(params.timeStartCut), 10),
-      parseInt(String(params.timeEndCut), 10)
+      parseInt(String(params.secondsCut), 10)
     ).then((response) => {
       if (response) {
         statusResponseCut = response.status
@@ -169,7 +168,7 @@ class VideoController {
     // -- concatenado em uma promise para que a tela espere o map executar para receber o response
     await Promise.all(
       locations.map(async (location: IReceiveConcatCams) => {
-        let videos: ICams[] = []
+        const videos: ICams[] = []
         await Promise.all(
           location.spaceCameras.map(async (cam: SpaceCameras) => {
             const name =
@@ -183,7 +182,7 @@ class VideoController {
             let camUrl = ''
             await fs.promises
               .access(path)
-              .then((response) => {
+              .then(() => {
                 // achou o arquivo
                 camUrl = `${global.url}${global.camera.outputFolder.replace(
                   './',
