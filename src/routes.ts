@@ -1,5 +1,6 @@
-import { Router } from 'express'
-import CronController from './controllers/CronController'
+import { Request, Response, Router, NextFunction } from 'express'
+import jwt from 'jsonwebtoken'
+const secret = 'meu-segredo' //esse segredo do JWT seria uma config
 
 // -- controllers
 import VideoController from './controllers/VideoController'
@@ -17,9 +18,9 @@ routes.get('/', (req, res) => {
 })
 
 // -- video
-routes.get('/video/cut/download', VideoController.getVideoCut)
-routes.get('/video/cut', VideoController.setVideoCut)
-routes.get('/video/:locationId', VideoController.getVideo)
+routes.get('/video/cut/download', verifyJWT, VideoController.getVideoCut)
+routes.get('/video/cut', verifyJWT, VideoController.setVideoCut)
+routes.get('/video/:locationId', verifyJWT, VideoController.getVideo)
 
 routes.get('*', function (req, res) {
   const dirPath = './'
@@ -36,5 +37,23 @@ routes.get('*', function (req, res) {
     res.status(404).end('Not found')
   })
 })
+
+//função que verifica se o JWT é ok
+function verifyJWT(req: Request, res: Response, next: NextFunction) {
+  var token = String(req.headers['x-access-token'])
+  if (!token)
+    return res
+      .status(401)
+      .send({ auth: false, message: 'Token não informado.' })
+
+  jwt.verify(token, secret, function (err: any, decoded: any) {
+    if (err)
+      return res.status(500).send({ auth: false, message: 'Token inválido.' })
+
+    // req.userId = decoded.id;
+    // console.log("User Id: " + decoded.id)
+    next()
+  })
+}
 
 export default routes
