@@ -26,16 +26,19 @@ class CronController {
     cron.schedule('0 0 */1 * *', async () => {
       // -- executa uma vez por dia.
       console.log('Executando a tarefa 2')
-      this.clearDirVideo(
-        global.camera.cut,
-        global.camera.removeCutVideoTime,
-        'mp4'
-      )
-      this.clearDirVideo(
-        global.camera.outputFolder,
-        global.camera.removeVideoTime,
-        'mp4'
-      )
+      setTimeout(() => {
+        // atrasa a execusao em 1 min para que a variavel config seja carregada.
+        this.clearDirVideo(
+          global.camera.cut,
+          global.camera.removeCutVideoTime,
+          'mp4'
+        )
+        this.clearDirVideo(
+          global.camera.outputFolder,
+          global.camera.removeVideoTime,
+          'mp4'
+        )
+      }, 1000)
     })
   }
 
