@@ -36,7 +36,7 @@
     "@types/node": "^8.0.29",
     "@types/node-cron": "^2.0.3",
     "@typescript-eslint/parser": "^4.6.0",
-    "@typescript-tsnde/eslint-plugin": "^4.6.0",
+    "@typescript-eslint/eslint-plugin": "^4.6.0",
     "eslint": "^7.12.1",
     "eslint-config-prettier": "^6.15.0",
     "eslint-config-standard": "^15.0.1",
