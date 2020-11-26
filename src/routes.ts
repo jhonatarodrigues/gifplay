@@ -1,6 +1,6 @@
 import { Request, Response, Router, NextFunction } from 'express'
 import jwt from 'jsonwebtoken'
-const secret = 'meu-segredo' //esse segredo do JWT seria uma config
+const secret = 'cleytonmota' //esse segredo do JWT seria uma config
 
 // -- controllers
 import VideoController from './controllers/VideoController'
@@ -22,6 +22,22 @@ routes.get('/video/cut/download', verifyJWT, VideoController.getVideoCut)
 routes.get('/video/cut', verifyJWT, VideoController.setVideoCut)
 routes.get('/video/:locationId', verifyJWT, VideoController.getVideo)
 
+routes.get('/teste', (req: Request, res: Response) => {
+  const token = jwt.sign(
+    {
+      auth: 'magic',
+      outro: 'sla',
+      outro2: 'sla',
+      outro3: 'sla',
+      agent: req.headers['user-agent'],
+      exp: Math.floor(new Date().getTime() / 1000) + 7 * 24 * 60 * 60 // Note: in seconds!
+    },
+    secret
+  ) // secret is defined in the environment variable JWT_SECRET
+
+  return res.status(200).json({ aa: 'aaaa', token })
+})
+
 routes.get('*', function (req, res) {
   const dirPath = './'
   const file = path.join(dirPath, req.path.replace(/\/$/, '/index.html'))
@@ -40,13 +56,17 @@ routes.get('*', function (req, res) {
 
 //função que verifica se o JWT é ok
 function verifyJWT(req: Request, res: Response, next: NextFunction) {
-  var token = String(req.headers['x-access-token'])
+  const token = String(req.headers['x-access-token'])
+
+  console.log('toekn ', token)
+
   if (!token)
     return res
       .status(401)
       .send({ auth: false, message: 'Token não informado.' })
 
   jwt.verify(token, secret, function (err: any, decoded: any) {
+    console.log(' === token', err, decoded)
     if (err)
       return res.status(500).send({ auth: false, message: 'Token inválido.' })
 

@@ -26,7 +26,16 @@ class CronController {
     cron.schedule('0 0 */1 * *', async () => {
       // -- executa uma vez por dia.
       console.log('Executando a tarefa 2')
-      this.clearCut()
+      this.clearDirVideo(
+        global.camera.cut,
+        global.camera.removeCutVideoTime,
+        'mp4'
+      )
+      this.clearDirVideo(
+        global.camera.outputFolder,
+        global.camera.removeVideoTime,
+        'mp4'
+      )
     })
   }
 
@@ -35,26 +44,27 @@ class CronController {
     await this.stopRecordLocationsMovie()
   }
 
-  private async clearCut(): Promise<void> {
-    fs.readdir(global.camera.cut, (_, files) => {
+  private async clearDirVideo(
+    repository: string,
+    diasRemove: number,
+    typeFile: string
+  ): Promise<void> {
+    fs.readdir(repository, (_, files) => {
       if (!files) {
         return false
       }
       files.forEach((file: string) => {
         const archiveExtension = String(file.split('.').pop())
 
-        if (archiveExtension && archiveExtension.toLowerCase() === 'mp4') {
-          const fileDirectory = `${global.camera.cut}${file}`
-          fs.stat(`${global.camera.cut}${file}`, (err, status) => {
+        if (archiveExtension && archiveExtension.toLowerCase() === typeFile) {
+          const fileDirectory = `${repository}${file}`
+          fs.stat(`${repository}${file}`, (err, status) => {
             if (err) {
               throw err
             }
 
             const dateFile = moment(status.mtime)
-            const dateRemoveFile = moment().subtract(
-              global.camera.removeCutVideoTime,
-              'd'
-            )
+            const dateRemoveFile = moment().subtract(diasRemove, 'd')
 
             if (dateFile <= dateRemoveFile) {
               try {

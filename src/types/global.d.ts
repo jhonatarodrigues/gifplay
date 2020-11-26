@@ -11,6 +11,7 @@ declare namespace NodeJS {
       fps: string
       maxTimeCutSeconds: number
       removeCutVideoTime: number
+      removeVideoTime: number
     }
     url: string
   }
