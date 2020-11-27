@@ -10,13 +10,16 @@
     "synchronize": true,
     "logging": false,
     "entities": [
-      "src/entity/gifplay/**/*.ts"
+      "src/entity/gifplay/**/*.{js,ts}",
+      "entity/gifplay/**/*.{js,ts}"
     ],
     "migrations": [
-      "src/migration/gifplay/**/*.ts"
+      "src/migration/gifplay/**/*.{js,ts}",
+      "migration/gifplay/**/*.{js,ts}"
     ],
     "subscribers": [
-      "src/subscriber/gifplay/**/*.ts"
+      "src/subscriber/gifplay/**/*.{js,ts}",
+      "subscriber/gifplay/**/*.{js,ts}"
     ]
   },
   {
@@ -29,14 +32,14 @@
     "database": "gifplay_log",
     "synchronize": true,
     "logging": false,
-    "entities": [
-      "src/entity/log/**/*.ts"
-    ],
+    "entities": ["src/entity/log/**/*.{js,ts}", "entity/log/**/*.{js,ts}"],
     "migrations": [
-      "src/migration/log/**/*.ts"
+      "src/migration/log/**/*.{js,ts}",
+      "migration/log/**/*.{js,ts}"
     ],
     "subscribers": [
-      "src/subscriber/log/**/*.ts"
+      "src/subscriber/log/**/*.{js,ts}",
+      "subscriber/log/**/*.{js,ts}"
     ]
   }
 ]
