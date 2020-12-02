@@ -1,11 +1,11 @@
 import { Request, Response, Router, NextFunction } from 'express'
-import jwt from 'jsonwebtoken'
-const secret = 'cleytonmota' //esse segredo do JWT seria uma config
+import jwt from 'jsonwebtoken' // esse segredo do JWT seria uma config
 
 // -- controllers
 import VideoController from './controllers/VideoController'
 import path from 'path'
 import fs from 'fs'
+const secret = 'cleytonmota'
 
 const mime: any = {
   jpg: 'image/jpeg'
@@ -14,7 +14,7 @@ const mime: any = {
 const routes = Router()
 
 routes.get('/', (req, res) => {
-  return res.send('hello demorando ')
+  return res.send('Gifplay Api')
 })
 
 // -- video
@@ -54,21 +54,23 @@ routes.get('*', function (req, res) {
   })
 })
 
-//função que verifica se o JWT é ok
+// função que verifica se o JWT é ok
 function verifyJWT(req: Request, res: Response, next: NextFunction) {
   const token = String(req.headers['x-access-token'])
 
   console.log('toekn ', token)
 
-  if (!token)
+  if (!token) {
     return res
       .status(401)
       .send({ auth: false, message: 'Token não informado.' })
+  }
 
   jwt.verify(token, secret, function (err: any, decoded: any) {
     console.log(' === token', err, decoded)
-    if (err)
+    if (err) {
       return res.status(500).send({ auth: false, message: 'Token inválido.' })
+    }
 
     // req.userId = decoded.id;
     // console.log("User Id: " + decoded.id)
