@@ -8,4 +8,6 @@ const port = process.env.PORT || 8080
 moment.tz.setDefault('America/Sao_Paulo')
 moment.locale('pt-br')
 
+console.log(`server on port ${port}`)
+
 app.listen(port)
