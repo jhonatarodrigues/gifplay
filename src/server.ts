@@ -3,9 +3,21 @@ import './config'
 import moment from 'moment-timezone'
 import http from 'http'
 import https from 'https'
+import fs from 'fs'
 
 const portHttp = 8080
 const portHttps = 8085
+
+// -- criacao de pastas necessárias
+if (!fs.existsSync(global.camera.outputFolder)) {
+  fs.mkdirSync(global.camera.outputFolder)
+}
+if (!fs.existsSync(global.camera.thumbs)) {
+  fs.mkdirSync(global.camera.thumbs)
+}
+if (!fs.existsSync(global.camera.cut)) {
+  fs.mkdirSync(global.camera.cut)
+}
 
 // -- config moment locale
 moment.tz.setDefault('America/Sao_Paulo')
