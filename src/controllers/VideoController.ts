@@ -19,6 +19,7 @@ interface ICams {
   camAlias: string
   nameArchive: string
   fileUrl: string
+  previewFileUrl: string
   thumbs: string[]
 }
 
@@ -200,6 +201,34 @@ class VideoController {
                 camUrl = 'error: Não encontramos o arquivo'
               })
 
+            let previewUrl = ''
+            const nameArchivePreview =
+              CamsController.generateNameArchive(
+                cam.cameraAlias || '',
+                cam.id,
+                location.id
+              ) + '-000_000.mp4'
+            const previewPath = `${global.camera.preview}/${nameArchivePreview}`
+            await fs.promises
+              .access(previewPath)
+              .then(() => {
+                // achou o arquivo
+                previewUrl = `${global.url}${global.camera.preview.replace(
+                  './',
+                  '/'
+                )}/${nameArchivePreview}`
+              })
+              .catch((error) => {
+                // -- não achou o arquivo
+                const paramsError = {
+                  error: `Não encontramos o arquivo na pasta de preview ${global.camera.preview}, error:${error} `,
+                  location: { ...location },
+                  cam: { ...cam }
+                }
+                LogController.setAcessLog(paramsError, '/videos/:locationId')
+                previewUrl = 'error: Não encontramos o arquivo de preview'
+              })
+
             // -- busca as thumbs existentes
             let thumbs: string[] = []
             if (cam.cameraId && cam.cameraAlias && location.id) {
@@ -217,6 +246,7 @@ class VideoController {
               camAlias: cam.cameraAlias || '',
               nameArchive: name,
               fileUrl: camUrl,
+              previewFileUrl: previewUrl,
               thumbs
             })
 

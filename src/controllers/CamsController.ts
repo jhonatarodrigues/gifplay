@@ -267,6 +267,50 @@ class CamsController {
     })
   }
 
+  private async generatePreview(name: string, id: number, locationId: number) {
+    const concatNameArchive = `${this.generateNameArchive(
+      name,
+      id,
+      locationId
+    )}-000`
+
+    const args = [
+      '-y',
+      '-i',
+      `${global.camera.outputFolder}${concatNameArchive}.mp4`,
+      '-crf',
+      '36',
+      '-preset',
+      'slow',
+      '-vf',
+      'scale=320:240',
+      '-an',
+      `${global.camera.preview}/${concatNameArchive}_000.mp4`
+    ]
+
+    const ffmpeg = spawn('ffmpeg', args)
+    ffmpeg.stderr.setEncoding('utf8')
+
+    ffmpeg.on('error', (err) => {
+      // -- error process
+      const params = {
+        camId: id,
+        locationId: locationId,
+        log: `ffmpeg: erro ao gerar preview do video: ${concatNameArchive}, error: ${err}`
+      }
+      LogController.setCamLog(params)
+    })
+    ffmpeg.on('close', () => {
+      const params = {
+        camId: id,
+        locationId: locationId,
+        log: `Fim da geração do preview do video: ${concatNameArchive}`,
+        success: true
+      }
+      LogController.setCamLog(params)
+    })
+  }
+
   public async getMovieCam({
     LocationID,
     ID,
@@ -294,8 +338,8 @@ class CamsController {
       'copy',
       '-timeout',
       global.camera.timeout,
-      '-c:v',
-      'libx264',
+      // '-c:v',
+      // 'libx264',
       '-map',
       '0',
       '-preset',
@@ -354,6 +398,9 @@ class CamsController {
       if (code === 255) {
         setTimeout(() => {
           this.generateThumbs(name, ID, LocationID)
+          setTimeout(() => {
+            this.generatePreview(name, ID, LocationID)
+          }, 30000)
         }, 30000)
       }
     })
@@ -362,7 +409,6 @@ class CamsController {
   }
 
   public stopRecordMovie(pid: number) {
-    console.log('stopRecordMovie ===', pid)
     Kill(pid)
   }
 }

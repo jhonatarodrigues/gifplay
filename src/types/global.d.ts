@@ -5,6 +5,7 @@ declare namespace NodeJS {
       outputFolder: string
       thumbs: string
       cut: string
+      preview: string
       timeout: string
       maxTimeRecord: string
       videoQuality: string
