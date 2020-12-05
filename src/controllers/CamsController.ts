@@ -267,7 +267,7 @@ class CamsController {
     })
   }
 
-  private async generatePreview(name: string, id: number, locationId: number) {
+  public async generatePreview(name: string, id: number, locationId: number) {
     const concatNameArchive = `${this.generateNameArchive(
       name,
       id,
@@ -363,7 +363,7 @@ class CamsController {
       '-segment_format',
       'mp4',
       '-an',
-      `${global.camera.outputFolder}${concatNameArchive}-%03d.mp4`
+      `${global.camera.outputFolder}${concatNameArchive}-%03dnoMark.mp4`
     ]
     args = [...tcpTransport, ...args]
 
@@ -396,16 +396,97 @@ class CamsController {
       }
       LogController.setCamLog(params)
       if (code === 255) {
-        setTimeout(() => {
-          this.generateThumbs(name, ID, LocationID)
+        this.addWaterMarkInVideo(name, ID, LocationID, () => {
           setTimeout(() => {
-            this.generatePreview(name, ID, LocationID)
+            this.generateThumbs(name, ID, LocationID)
+            setTimeout(() => {
+              this.generatePreview(name, ID, LocationID)
+            }, 30000)
           }, 30000)
-        }, 30000)
+        })
       }
     })
 
     return ffmpeg.pid
+  }
+
+  private async addWaterMarkInVideo(
+    name: string,
+    id: number,
+    locationId: number,
+    callback: () => void
+  ) {
+    const concatNameArchive = `${this.generateNameArchive(
+      name,
+      id,
+      locationId
+    )}-000`
+
+    const params = {
+      camId: id,
+      locationId: locationId,
+      log: `inicio da geração do video com marca d agua: ${concatNameArchive}`,
+      success: true
+    }
+    LogController.setCamLog(params)
+
+    let logoGifplay = './images/logoGifplay.png'
+    await fs.promises
+      .access(logoGifplay)
+      .then(() => {
+        // -- faz nd
+      })
+      .catch(() => {
+        logoGifplay = './src/images/logoGifplay.png'
+      })
+
+    const video = `${global.camera.outputFolder}${concatNameArchive}noMark.mp4`
+
+    const args = [
+      '-y',
+      '-i',
+      video,
+      '-i',
+      logoGifplay,
+      '-filter_complex',
+      'overlay=main_w-overlay_w-10:main_h-overlay_h-10',
+      '-an',
+      `${global.camera.outputFolder}/${concatNameArchive}.mp4`
+    ]
+
+    const ffmpeg = spawn('ffmpeg', args)
+    ffmpeg.stderr.setEncoding('utf8')
+    ffmpeg.on('error', (err) => {
+      // -- error process
+      const params = {
+        camId: id,
+        locationId: locationId,
+        log: `ffmpeg: erro ao gerar video com marca d água: ${concatNameArchive}, error: ${err}`
+      }
+      LogController.setCamLog(params)
+    })
+    ffmpeg.on('close', () => {
+      const params = {
+        camId: id,
+        locationId: locationId,
+        log: `Fim da geração do video com marca d agua: ${concatNameArchive}`,
+        success: true
+      }
+      LogController.setCamLog(params)
+
+      fs.unlink(video, () => {
+        // removido
+        const params = {
+          camId: id,
+          locationId: locationId,
+          log: `apagado arquivo: ${concatNameArchive}`,
+          success: true
+        }
+        LogController.setCamLog(params)
+
+        callback()
+      })
+    })
   }
 
   public stopRecordMovie(pid: number) {
