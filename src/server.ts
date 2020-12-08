@@ -27,11 +27,9 @@ moment.tz.setDefault('America/Sao_Paulo')
 moment.locale('pt-br')
 
 console.log(`server on port ${portHttp} and https: ${portHttps}`)
-const port = process.env.PORT || 8080
-app.listen(port)
 
-// const httpServer = http.createServer(app)
-// const httpsServer = https.createServer(app)
+const httpServer = http.createServer(app)
+const httpsServer = https.createServer(app)
 
-// httpServer.listen(portHttp)
-// httpsServer.listen(portHttps)
+httpServer.listen(portHttp)
+httpsServer.listen(portHttps)
