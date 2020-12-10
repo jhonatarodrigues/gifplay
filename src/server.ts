@@ -5,7 +5,7 @@ import http from 'http'
 import https from 'https'
 import fs from 'fs'
 
-const portHttp = 8080
+const portHttp = 80
 const portHttps = 8085
 
 // -- criacao de pastas necessárias
