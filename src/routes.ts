@@ -18,25 +18,25 @@ routes.get('/', (req, res) => {
 })
 
 // -- video
-routes.get('/video/cut/download', verifyJWT, VideoController.getVideoCut)
-routes.get('/video/cut', verifyJWT, VideoController.setVideoCut)
-routes.get('/video/:locationId', verifyJWT, VideoController.getVideo)
+routes.get('/video/cut/download', VideoController.getVideoCut)
+routes.get('/video/cut', VideoController.setVideoCut)
+routes.get('/video/:locationId', VideoController.getVideo)
 
-routes.get('/teste', (req: Request, res: Response) => {
-  const token = jwt.sign(
-    {
-      auth: 'magic',
-      outro: 'sla',
-      outro2: 'sla',
-      outro3: 'sla',
-      agent: req.headers['user-agent'],
-      exp: Math.floor(new Date().getTime() / 1000) + 7 * 24 * 60 * 60 // Note: in seconds!
-    },
-    secret
-  ) // secret is defined in the environment variable JWT_SECRET
+// routes.get('/teste', (req: Request, res: Response) => {
+//   const token = jwt.sign(
+//     {
+//       auth: 'magic',
+//       outro: 'sla',
+//       outro2: 'sla',
+//       outro3: 'sla',
+//       agent: req.headers['user-agent'],
+//       exp: Math.floor(new Date().getTime() / 1000) + 7 * 24 * 60 * 60 // Note: in seconds!
+//     },
+//     secret
+//   ) // secret is defined in the environment variable JWT_SECRET
 
-  return res.status(200).json({ aa: 'aaaa', token })
-})
+//   return res.status(200).json({ aa: 'aaaa', token })
+// })
 
 routes.get('*', function (req, res) {
   const dirPath = './'
