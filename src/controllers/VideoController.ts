@@ -15,6 +15,7 @@ interface IReceiveConcatCams extends Locations {
 }
 
 interface ICams {
+  id: number
   camId: string
   camAlias: string
   nameArchive: string
@@ -242,6 +243,7 @@ class VideoController {
             }
 
             videos.push({
+              id: cam.id,
               camId: cam.cameraId || '',
               camAlias: cam.cameraAlias || '',
               nameArchive: name,
