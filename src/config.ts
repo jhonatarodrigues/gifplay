@@ -12,4 +12,4 @@ global.camera = {
   removeVideoTime: 30 // -- tempo em dias no caso remove de dois dias atrás
 }
 
-global.url = 'http://localhost:8080'
+global.url = 'http://52.67.73.121'
