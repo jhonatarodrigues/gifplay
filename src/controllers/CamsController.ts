@@ -201,7 +201,7 @@ class CamsController {
           const params = {
             camId: camId,
             locationId: locationId,
-            log: `Envio do post para onsign: ${response.data}`,
+            log: `Envio do post para onsign: ${JSON.stringify(response.data)}`,
             success: true
           }
           LogController.setCamLog(params)
