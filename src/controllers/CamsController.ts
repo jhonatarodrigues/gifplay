@@ -174,7 +174,7 @@ class CamsController {
       axios
         .post('https://onesignal.com/api/v1/notifications', data, header)
         .then((response) => {
-          console.log('response onsign ===', response)
+          console.log('response onsign ===', response.data)
           const params = {
             camId: camId,
             locationId: locationId,
