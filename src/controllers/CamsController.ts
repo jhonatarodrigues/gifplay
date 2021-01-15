@@ -148,7 +148,7 @@ class CamsController {
         contents: {
           en: 'Teste de notificação'
         },
-        data: { transactionid: String(transactionId) },
+        data: { transactionid: `${transactionId}` },
         headings: {
           en: 'Gifplay'
         },
@@ -157,7 +157,7 @@ class CamsController {
             field: 'tag',
             key: 'transactionid',
             relation: '=',
-            value: String(transactionId)
+            value: `${transactionId}`
           }
         ],
         android_group: 'gifplay',
