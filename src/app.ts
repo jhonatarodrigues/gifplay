@@ -4,6 +4,7 @@ import routes from './routes'
 import * as bodyParser from 'body-parser'
 import DBController from './controllers/DBController'
 import CronController from './controllers/CronController'
+import morgan from 'morgan'
 
 class App {
   public express: express.Application
@@ -22,6 +23,11 @@ class App {
   }
 
   private routes(): void {
+    this.express.use(
+      morgan(
+        ':method :url :status :response-time ms - Length: :res[content-length]'
+      )
+    )
     this.express.use(routes)
   }
 }

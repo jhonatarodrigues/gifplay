@@ -7,6 +7,7 @@ import fs from 'fs'
 import moment from 'moment-timezone'
 import DBController from './DBController'
 import { Record } from '../entity/gifplay/Record'
+import axios from 'axios'
 
 interface videoRtsp {
   LocationID: number
@@ -80,7 +81,8 @@ class CamsController {
     camId: number,
     locationId: number,
     startCut: number,
-    secondsCut: number
+    secondsCut: number,
+    transactionId: string
   ): Promise<returnCutVideo> {
     const concatNameArchive = `${this.generateNameArchive(
       name,
@@ -160,6 +162,59 @@ class CamsController {
         success: true
       }
       LogController.setCamLog(params)
+
+      const header = {
+        headers: {
+          Authorization: process.env.AUTH_ONSIGN
+        }
+      }
+      const data = {
+        app_id: process.env.APP_ID_ONSIGN,
+        contents: {
+          en: 'Teste de notificação'
+        },
+        data: { transactionid: transactionId },
+        headings: {
+          en: 'Gifplay'
+        },
+        filters: [
+          {
+            field: 'tag',
+            key: 'transactionid',
+            relation: '=',
+            value: transactionId
+          }
+        ],
+        android_group: 'gifplay',
+        android_group_message: {
+          en: '$[notif_count] Novos eventos detectados'
+        },
+        thread_id: 'gifplay',
+        summary_arg: { en: '$[notif_count] Novos eventos detectados' },
+        android_visibility: 1,
+        collapse_id: 'gifplay-video',
+        priority: 10
+      }
+      axios
+        .post('https://onesignal.com/api/v1/notifications', data, header)
+        .then(function (response) {
+          const params = {
+            camId: camId,
+            locationId: locationId,
+            log: `Envio do post para onsign: ${response.data}`,
+            success: true
+          }
+          LogController.setCamLog(params)
+        })
+        .catch(function (error) {
+          const params = {
+            camId: camId,
+            locationId: locationId,
+            log: `Erro ao enviar post para onsign: ${error}`,
+            success: false
+          }
+          LogController.setCamLog(params)
+        })
     })
 
     return {

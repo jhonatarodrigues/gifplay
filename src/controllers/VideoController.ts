@@ -77,7 +77,8 @@ class VideoController {
       !params.location ||
       !params.timeStartCut ||
       !params.secondsCut ||
-      !params.camAlias
+      !params.camAlias ||
+      !params.transactionId
     ) {
       return res.status(203).json({
         msg:
@@ -105,7 +106,8 @@ class VideoController {
       parseInt(String(params.cam), 10),
       parseInt(String(params.location), 10),
       parseInt(String(params.timeStartCut), 10),
-      parseInt(String(params.secondsCut), 10)
+      parseInt(String(params.secondsCut), 10),
+      String(params.transactionId)
     ).then((response) => {
       if (response) {
         statusResponseCut = response.status
