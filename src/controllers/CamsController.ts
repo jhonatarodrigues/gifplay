@@ -148,7 +148,7 @@ class CamsController {
         contents: {
           en: 'Teste de notificação'
         },
-        data: { transactionid: transactionId },
+        data: { transactionid: String(transactionId) },
         headings: {
           en: 'Gifplay'
         },
@@ -157,7 +157,7 @@ class CamsController {
             field: 'tag',
             key: 'transactionid',
             relation: '=',
-            value: transactionId
+            value: String(transactionId)
           }
         ],
         android_group: 'gifplay',
@@ -173,7 +173,7 @@ class CamsController {
       console.log('envio onsign', data, header)
       axios
         .post('https://onesignal.com/api/v1/notifications', data, header)
-        .then(function (response) {
+        .then((response) => {
           console.log('response onsign ===', response)
           const params = {
             camId: camId,
@@ -183,7 +183,7 @@ class CamsController {
           }
           LogController.setCamLog(params)
         })
-        .catch(function (error) {
+        .catch((error) => {
           const params = {
             camId: camId,
             locationId: locationId,
