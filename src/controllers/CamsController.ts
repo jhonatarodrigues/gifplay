@@ -72,6 +72,7 @@ class CamsController {
       camId,
       locationId
     )}`
+
     const params = {
       camId: camId,
       locationId: locationId,
@@ -112,6 +113,8 @@ class CamsController {
       '1',
       videoFinal
     ]
+
+    console.log('args cut', args)
 
     const ffmpeg = spawn('ffmpeg', args, {
       shell: true
