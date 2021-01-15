@@ -41,27 +41,10 @@ class CamsController {
     return newVal
   }
 
-  public async getCutVideo(
-    name: string,
-    camId: number,
-    locationId: number,
-    startCut: number,
-    secondsCut: number
-  ): Promise<string> {
-    const concatNameArchive = `${this.generateNameArchive(
-      name,
-      camId,
-      locationId
-    )}`
+  public async getCutVideo(transactionId: string): Promise<string> {
+    const concatNameArchive = `${transactionId}`
 
-    const start = moment(moment().format('YYYY-MM-DD')).add(startCut, 'seconds')
-    const end = moment(moment().format('YYYY-MM-DD')).add(secondsCut, 'seconds')
-    const archiveCutName = `${concatNameArchive}-000_${String(
-      start.format('HH-mm-ss')
-    ).replace(/[^0-9]+/g, '')}-${String(end.format('HH-mm-ss')).replace(
-      /[^0-9]+/g,
-      ''
-    )}.mp4`
+    const archiveCutName = `${concatNameArchive}-000.mp4`
     const videoFinal = `${global.camera.cut}${archiveCutName}`
     let urlVideo = ''
     await fs.promises
@@ -99,22 +82,11 @@ class CamsController {
 
     const start = moment(moment().format('YYYY-MM-DD')).add(startCut, 'seconds')
     const end = moment(moment().format('YYYY-MM-DD')).add(secondsCut, 'seconds')
-    const archiveCutName = `${concatNameArchive}-000_${String(
-      start.format('HH-mm-ss')
-    ).replace(/[^0-9]+/g, '')}-${String(end.format('HH-mm-ss')).replace(
-      /[^0-9]+/g,
-      ''
-    )}.mp4`
+    const archiveCutName = `${transactionId}-000.mp4`
     const secondsAfterStart = end.seconds()
     const dateSecondsAfterStart = end.format('HH:mm:ss')
     const videoFinal = `${global.camera.cut}${archiveCutName}`
-    const msgVideoExiste = await this.getCutVideo(
-      name,
-      camId,
-      locationId,
-      startCut,
-      secondsCut
-    )
+    const msgVideoExiste = await this.getCutVideo(transactionId)
     if (msgVideoExiste) {
       return {
         status: 200,

@@ -36,29 +36,18 @@ class VideoController {
   public async getVideoCut(req: Request, res: Response): Promise<Response> {
     const params = req.query
 
-    if (
-      !params.cam ||
-      !params.location ||
-      !params.timeStartCut ||
-      !params.secondsCut ||
-      !params.camAlias
-    ) {
+    if (!params.transactionId) {
       return res.status(203).json({
-        msg:
-          'você precisa enviar todos os parametros (cam, location, timeStartCut, secondsCut)'
+        msg: 'você precisa enviar todos os parametros (transactionId)'
       })
     }
 
     let fileUrl = ''
-    await CamsController.getCutVideo(
-      String(params.camAlias),
-      parseInt(String(params.cam), 10),
-      parseInt(String(params.location), 10),
-      parseInt(String(params.timeStartCut), 10),
-      parseInt(String(params.secondsCut), 10)
-    ).then((response) => {
-      fileUrl = response
-    })
+    await CamsController.getCutVideo(String(params.transactionId)).then(
+      (response) => {
+        fileUrl = response
+      }
+    )
 
     if (!fileUrl) {
       return res.status(400).json({
