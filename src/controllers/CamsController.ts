@@ -167,9 +167,11 @@ class CamsController {
         collapse_id: 'gifplay-video',
         priority: 10
       }
+      console.log('envio onsign', data, header)
       axios
         .post('https://onesignal.com/api/v1/notifications', data, header)
         .then(function (response) {
+          console.log('response onsign ===', response)
           const params = {
             camId: camId,
             locationId: locationId,
