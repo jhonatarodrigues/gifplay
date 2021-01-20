@@ -5,6 +5,8 @@ declare namespace NodeJS {
       outputFolder: string
       uploadFolder: string
       uploadFolderTratado: string
+      uploadFolderPreview: string
+      uploadFolderCut: string
       thumbs: string
       cut: string
       preview: string

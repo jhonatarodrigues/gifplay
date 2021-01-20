@@ -65,6 +65,34 @@ class VideoController {
     return res.status(200).json({ fileUrl })
   }
 
+  public async getUploadCut(req: Request, res: Response): Promise<Response> {
+    const params = req.query
+
+    if (!params.transactionId) {
+      return res.status(203).json({
+        msg: 'você precisa enviar todos os parametros (transactionId)'
+      })
+    }
+
+    let fileUrl = ''
+    const path = `${global.camera.uploadFolderCut}/${params.transactionId}.mp4`
+    await fs.promises.access(path).then(() => {
+      // achou o arquivo
+      fileUrl = `${global.url}/${global.camera.uploadFolderCut.replace(
+        './',
+        ''
+      )}/${params.transactionId}.mp4`
+    })
+
+    if (!fileUrl) {
+      return res.status(400).json({
+        msg: 'Não encontramos o video, por favor verifique os parametros.'
+      })
+    }
+
+    return res.status(200).json({ fileUrl })
+  }
+
   public async setSendFile(req: Request, res: Response): Promise<Response> {
     const params = req.body
     const file = req.file
@@ -82,6 +110,7 @@ class VideoController {
         nameFile: fileName,
         processed: false,
         audio: params.audio || false,
+        preview: false,
         dateRegistry: moment().toDate()
       }
     ]
@@ -159,6 +188,99 @@ class VideoController {
     return res
       .status(200)
       .json({ msg: 'em processo de corte, aguarde para fazer o donwload.' })
+  }
+
+  public async setUploadCut(req: Request, res: Response): Promise<Response> {
+    const params = req.query
+
+    if (
+      !params.idVideo ||
+      !params.timeStartCut ||
+      !params.secondsCut ||
+      !params.transactionId
+    ) {
+      return res.status(203).json({
+        msg:
+          'você precisa enviar todos os parametros (idvideo, timeStartCut, secondsCut)'
+      })
+    }
+
+    const getParams = {
+      table: 'upload',
+      entity: Upload,
+      where: 'id = :id and processed = true and preview = true',
+      paramsWhere: { id: params.idVideo }
+    }
+    const video = await DBController.get(getParams)
+
+    if (video.length <= 0) {
+      return res
+        .status(206)
+        .json({ msg: 'Video não encontrado ou em processamento.' })
+    }
+
+    const [upload] = video
+    const extension = upload.nameFile.split('.').pop()
+    const pathFile = `${global.camera.uploadFolderPreview}/${upload.nameFile}`
+    const destinyFile = `${global.camera.uploadFolderCut}/${params.transactionId}.${extension}`
+
+    await CamsController.cutVideoUpload(
+      upload.nameFile,
+      pathFile,
+      destinyFile,
+      upload.idLocation,
+      parseInt(String(params.timeStartCut), 10),
+      parseInt(String(params.secondsCut), 10)
+    )
+
+    return res
+      .status(200)
+      .json({ msg: 'em processo de corte, aguarde para fazer o donwload.' })
+  }
+
+  public async deleteUpload(req: Request, res: Response): Promise<Response> {
+    const params = req.query
+
+    if (!params.idVideo) {
+      return res.status(203).json({
+        msg:
+          'você precisa enviar todos os parametros (idvideo, timeStartCut, secondsCut)'
+      })
+    }
+
+    const getParams = {
+      table: 'upload',
+      entity: Upload,
+      where: 'id = :id',
+      paramsWhere: { id: params.idVideo }
+    }
+    const video = await DBController.get(getParams)
+    if (video.length === 0) {
+      return res.status(206).json({ msg: 'O video não foi encontrado' })
+    }
+
+    const [upload] = video
+
+    const pathVideo = `${global.camera.uploadFolderPreview}/${upload.nameFile}`
+
+    const paramsDelete = {
+      entity: Upload,
+      where: `id = ${params.idVideo}`
+    }
+    DBController.delete(paramsDelete)
+
+    fs.unlink(pathVideo, () => {
+      // --
+      const params = {
+        camId: 0,
+        locationId: upload.idLocation,
+        log: `video apagado: ${pathVideo}`,
+        success: true
+      }
+      LogController.setCamLog(params)
+    })
+
+    return res.status(200).json({ msg: 'Video apagado com sucesso' })
   }
 
   public async getVideo(req: Request, res: Response): Promise<Response> {
@@ -313,17 +435,25 @@ class VideoController {
               const itensUpload: IUpload[] = []
               await Promise.all(
                 location.upload.map(async (item: Upload) => {
-                  const filePath = `${global.camera.uploadFolderTratado.replace(
+                  const filePath = `${global.camera.uploadFolderPreview.replace(
                     './',
-                    global.url
+                    `${global.url}/`
                   )}/${item.nameFile}`
+                  const pathRealFile = `${global.camera.uploadFolderPreview}/${item.nameFile}`
                   const newItem: IUpload = {
                     ...item,
                     filePath
                   }
 
-                  if (newItem.processed === true) {
-                    itensUpload.push(newItem)
+                  if (newItem.processed === true && newItem.preview === true) {
+                    await fs.promises
+                      .access(pathRealFile)
+                      .then(() => {
+                        itensUpload.push(newItem)
+                      })
+                      .catch(() => {
+                        // -- n faz nd
+                      })
                   }
 
                   return item

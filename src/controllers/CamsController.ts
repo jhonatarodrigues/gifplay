@@ -7,6 +7,7 @@ import fs from 'fs'
 import moment from 'moment-timezone'
 import DBController from './DBController'
 import { Record } from '../entity/gifplay/Record'
+import { Upload } from '../entity/gifplay/Upload'
 import axios from 'axios'
 
 interface videoRtsp {
@@ -114,8 +115,6 @@ class CamsController {
       videoFinal
     ]
 
-    console.log('args cut', args)
-
     const ffmpeg = spawn('ffmpeg', args, {
       shell: true
     })
@@ -192,6 +191,77 @@ class CamsController {
           }
           LogController.setCamLog(params)
         })
+    })
+
+    return {
+      status: 200,
+      msg: 'em processo de corte, aguarde para fazer o donwload.'
+    }
+  }
+
+  public async cutVideoUpload(
+    nameFile: string,
+    pathFile: string,
+    destinyPath: string,
+    locationId: number,
+    startCut: number,
+    secondsCut: number
+  ): Promise<returnCutVideo> {
+    const concatNameArchive = nameFile
+
+    const params = {
+      camId: 0,
+      locationId: locationId,
+      log: `Inicio de corte de video: ${concatNameArchive}, start:${startCut}, end: ${secondsCut}`,
+      success: true
+    }
+    LogController.setCamLog(params)
+
+    const start = moment(moment().format('YYYY-MM-DD')).add(startCut, 'seconds')
+    const end = moment(moment().format('YYYY-MM-DD')).add(secondsCut, 'seconds')
+    const secondsAfterStart = end.seconds()
+    const dateSecondsAfterStart = end.format('HH:mm:ss')
+
+    if (secondsAfterStart > global.camera.maxTimeCutSeconds) {
+      return {
+        status: 206,
+        msg: `Você não pode cortar mais de ${global.camera.maxTimeCutSeconds} segundos de video.`
+      }
+    }
+
+    const args = [
+      '-ss',
+      `${start.format('HH:mm:ss')}`,
+      '-i',
+      pathFile,
+      '-to',
+      `${dateSecondsAfterStart}`,
+      '-async',
+      '1',
+      destinyPath
+    ]
+
+    const ffmpeg = spawn('ffmpeg', args, {
+      shell: true
+    })
+    ffmpeg.stderr.setEncoding('utf8')
+    ffmpeg.on('error', (err) => {
+      // -- error process
+      const params = {
+        camId: 0,
+        locationId: locationId,
+        log: `ffmpeg: erro ao cortar o video: ${concatNameArchive}, error: ${err}`
+      }
+      LogController.setCamLog(params)
+    })
+    ffmpeg.on('close', () => {
+      const params = {
+        camId: 0,
+        locationId: locationId,
+        log: `Fim do corte do video: ${concatNameArchive}, start:${startCut}, end: ${secondsCut}`,
+        success: true
+      }
+      LogController.setCamLog(params)
     })
 
     return {
@@ -522,12 +592,14 @@ class CamsController {
   }
 
   public async convertVideoUpload(
+    id: number,
     nameFile: string,
     pathFile: string,
     locationId: number,
     audio: boolean
   ) {
     const concatNameArchive = nameFile
+    const distinyFile = `${global.camera.uploadFolderTratado}/${concatNameArchive}`
 
     const params = {
       camId: 0,
@@ -555,7 +627,7 @@ class CamsController {
       logoGifplay,
       '-filter_complex',
       'overlay=main_w-overlay_w-10:main_h-overlay_h-10',
-      `${global.camera.uploadFolderTratado}/${concatNameArchive}`
+      distinyFile
     ]
 
     if (audio === false) {
@@ -568,7 +640,7 @@ class CamsController {
         '-filter_complex',
         'overlay=main_w-overlay_w-10:main_h-overlay_h-10',
         '-an',
-        `${global.camera.uploadFolderTratado}/${concatNameArchive}`
+        distinyFile
       ]
     }
 
@@ -592,12 +664,106 @@ class CamsController {
       }
       LogController.setCamLog(params)
 
+      setTimeout(() => {
+        this.convertVideoUploadPreview(id, nameFile, distinyFile, locationId)
+      }, 5000)
+
       fs.unlink(pathFile, () => {
         // removido
         const params = {
           camId: 0,
           locationId: locationId,
           log: `apagado arquivo: ${concatNameArchive}`,
+          success: true
+        }
+        LogController.setCamLog(params)
+      })
+    })
+  }
+
+  public async convertVideoUploadPreview(
+    id: number,
+    nameFile: string,
+    pathFile: string,
+    locationId: number
+  ) {
+    const params = {
+      camId: 0,
+      locationId: locationId,
+      log: `inicio da tratativa do video enviado como preview: ${nameFile}`,
+      success: true
+    }
+    LogController.setCamLog(params)
+
+    let logoGifplay = './images/logoGifplay.png'
+    await fs.promises
+      .access(logoGifplay)
+      .then(() => {
+        // -- faz nd
+      })
+      .catch(() => {
+        logoGifplay = './src/images/logoGifplay.png'
+      })
+
+    const args = [
+      '-i',
+      pathFile,
+      '-map',
+      '0',
+      '-preset',
+      'veryslow',
+      '-r',
+      '24', // -- frames
+      '-crf',
+      global.camera.videoQuality, /// -- qualidade do video, default 23 quanto maior o numero pior a qualidade
+      '-threads',
+      '2',
+      '-metadata',
+      `title=GifPlay-${nameFile}`,
+      '-metadata',
+      `comment=${nameFile}`,
+      '-vf',
+      'scale=1280:720',
+      `${global.camera.uploadFolderPreview}/${nameFile}`
+    ]
+
+    const ffmpeg = spawn('ffmpeg', args)
+    ffmpeg.stderr.setEncoding('utf8')
+
+    ffmpeg.on('error', (err) => {
+      // -- error process
+      const params = {
+        camId: 0,
+        locationId: locationId,
+        log: `ffmpeg: erro ao gerar video de upload de preview: ${nameFile}, error: ${err}`
+      }
+      LogController.setCamLog(params)
+    })
+    ffmpeg.on('close', () => {
+      const params = {
+        camId: 0,
+        locationId: locationId,
+        log: `Fim da tratativa do video do upload de preview: ${nameFile}`,
+        success: true
+      }
+      LogController.setCamLog(params)
+
+      const data: any = {
+        preview: true
+      }
+      const paramsUpdate = {
+        entity: Upload,
+        data,
+        where: `id = ${id}`
+      }
+      DBController.update(paramsUpdate)
+
+      fs.unlink(pathFile, () => {
+        // removido
+        const params = {
+          camId: 0,
+          locationId: locationId,
+          log: `apagado arquivo: ${nameFile}`,
           success: true
         }
         LogController.setCamLog(params)

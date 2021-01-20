@@ -17,6 +17,9 @@ export class Upload {
   @Column('boolean', { name: 'audio', default: false })
   audio: boolean
 
+  @Column('boolean', { name: 'preview', default: false })
+  preview: boolean
+
   @Column('datetime', { name: 'date' })
   dateRegistry: Date
 }

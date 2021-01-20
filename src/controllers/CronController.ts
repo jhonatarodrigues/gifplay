@@ -41,8 +41,6 @@ class CronController {
         )
       }, 1000)
     })
-
-    setTimeout(() => this.verifyUploadVideo(), 1000)
   }
 
   private async verifyUploadVideo(): Promise<void> {
@@ -57,12 +55,11 @@ class CronController {
       uploadVideos.map(async (video: Upload) => {
         const pathVideo = `${global.camera.uploadFolder}/${video.nameFile}`
 
-        console.log(pathVideo)
-
         await fs.promises
           .access(pathVideo)
           .then(() => {
             CamsController.convertVideoUpload(
+              video.id || 0,
               video.nameFile,
               pathVideo,
               video.idLocation,

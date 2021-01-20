@@ -46,6 +46,11 @@ routes.get('/video/cut/download', VideoController.getVideoCut)
 routes.get('/video/cut', VideoController.setVideoCut)
 routes.get('/video/:locationId', VideoController.getVideo)
 
+// -- upload
+routes.get('/upload/cut', VideoController.setUploadCut)
+routes.delete('/upload', VideoController.deleteUpload)
+routes.get('/upload/cut/download', VideoController.getUploadCut)
+
 // -- send file
 routes.post(
   '/video/sendFile',

@@ -2,6 +2,8 @@ global.camera = {
   outputFolder: './videos/',
   uploadFolder: './videos/upload',
   uploadFolderTratado: './videos/upload/trados',
+  uploadFolderPreview: './videos/upload/preview',
+  uploadFolderCut: './videos/upload/cut',
   thumbs: './videos/thumbs/',
   cut: './videos/cut/',
   preview: './videos/preview',
