@@ -3,6 +3,7 @@ declare namespace NodeJS {
   interface Global {
     camera: {
       outputFolder: string
+      uploadFolder: string
       thumbs: string
       cut: string
       preview: string

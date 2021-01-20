@@ -1,4 +1,4 @@
-import express from 'express'
+import express, { Request, Response, NextFunction } from 'express'
 import cors from 'cors'
 import routes from './routes'
 import * as bodyParser from 'body-parser'
@@ -29,6 +29,19 @@ class App {
       )
     )
     this.express.use(routes)
+
+    // -- trata erro do multer, vulgo arquivo grande
+    this.express.use(function (
+      err: Error,
+      req: Request,
+      res: Response,
+      next: NextFunction
+    ) {
+      if (err.message === 'File too large') {
+        res.status(413).send(err.message)
+        res.end('')
+      }
+    })
   }
 }
 

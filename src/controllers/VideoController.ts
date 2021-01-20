@@ -4,6 +4,7 @@ import CamsController from './CamsController'
 import LogController from './LogController'
 import moment from 'moment-timezone'
 import fs from 'fs'
+import multer from 'multer'
 
 // -- entity
 import { Locations } from '../entity/gifplay/Locations'
@@ -56,6 +57,21 @@ class VideoController {
     }
 
     return res.status(200).json({ fileUrl })
+  }
+
+  public async setSendFile(req: Request, res: Response): Promise<Response> {
+    const params = req.body
+    const file = req.file
+
+    if (!params.idLocation || !file.originalname) {
+      return res.status(203).json({
+        msg: 'você precisa enviar todos os parametros (idLocation, file)'
+      })
+    }
+
+    console.log('params ===', params.idLocation, file)
+
+    return res.status(200).json({ msg: 'arquivo ====' })
   }
 
   public async setVideoCut(req: Request, res: Response): Promise<Response> {

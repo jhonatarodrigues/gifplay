@@ -21,6 +21,9 @@ if (!fs.existsSync(global.camera.cut)) {
 if (!fs.existsSync(global.camera.preview)) {
   fs.mkdirSync(global.camera.preview)
 }
+if (!fs.existsSync(global.camera.uploadFolder)) {
+  fs.mkdirSync(global.camera.uploadFolder)
+}
 
 // -- config moment locale
 moment.tz.setDefault('America/Sao_Paulo')
