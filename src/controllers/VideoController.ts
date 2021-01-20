@@ -75,14 +75,13 @@ class VideoController {
       })
     }
 
-    const fileExtension = file.originalname.split('.').pop()
-    const fileName = `${file.filename}.${fileExtension}`
-
+    const fileName = `${file.filename}`
     const dataUpload: Upload[] = [
       {
         idLocation: params.idLocation,
         nameFile: fileName,
         processed: false,
+        audio: params.audio || false,
         dateRegistry: moment().toDate()
       }
     ]

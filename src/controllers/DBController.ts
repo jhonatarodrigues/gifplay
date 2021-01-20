@@ -1,4 +1,4 @@
-import { createConnections, getConnection } from 'typeorm'
+import { createConnections, Entity, getConnection } from 'typeorm'
 
 interface LeftJoin {
   nameNewField: string
@@ -20,6 +20,13 @@ interface IInsert {
   entity: any
   data: any[]
   db?: string
+}
+
+interface IUpdate {
+  entity: any
+  data: any
+  db?: string
+  where: any
 }
 
 interface IDelete {
@@ -62,7 +69,6 @@ class DBController {
       )
     }
     if (Array.isArray(multipleLeftJoin)) {
-      console.log('aquii')
       multipleLeftJoin.map((join) => {
         response.leftJoinAndMapMany(
           join.nameNewField,
@@ -85,6 +91,22 @@ class DBController {
       .insert()
       .into(entity)
       .values(data)
+      .execute()
+
+    return response
+  }
+
+  public async update({
+    entity,
+    data,
+    db = 'default',
+    where
+  }: IUpdate): Promise<any> {
+    const response = await getConnection(db)
+      .createQueryBuilder()
+      .update(entity)
+      .set(data)
+      .where(where)
       .execute()
 
     return response

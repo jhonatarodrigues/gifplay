@@ -14,6 +14,9 @@ export class Upload {
   @Column('boolean', { name: 'processed' })
   processed: boolean
 
+  @Column('boolean', { name: 'audio', default: false })
+  audio: boolean
+
   @Column('datetime', { name: 'date' })
   dateRegistry: Date
 }

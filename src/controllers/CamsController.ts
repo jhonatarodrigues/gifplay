@@ -521,6 +521,90 @@ class CamsController {
     })
   }
 
+  public async convertVideoUpload(
+    nameFile: string,
+    pathFile: string,
+    locationId: number,
+    audio: boolean
+  ) {
+    const concatNameArchive = nameFile
+
+    const params = {
+      camId: 0,
+      locationId: locationId,
+      log: `inicio da tratativa do video enviado: ${concatNameArchive}`,
+      success: true
+    }
+    LogController.setCamLog(params)
+
+    let logoGifplay = './images/logoGifplay.png'
+    await fs.promises
+      .access(logoGifplay)
+      .then(() => {
+        // -- faz nd
+      })
+      .catch(() => {
+        logoGifplay = './src/images/logoGifplay.png'
+      })
+
+    let args = [
+      '-y',
+      '-i',
+      pathFile,
+      '-i',
+      logoGifplay,
+      '-filter_complex',
+      'overlay=main_w-overlay_w-10:main_h-overlay_h-10',
+      `${global.camera.uploadFolderTratado}/${concatNameArchive}`
+    ]
+
+    if (audio === false) {
+      args = [
+        '-y',
+        '-i',
+        pathFile,
+        '-i',
+        logoGifplay,
+        '-filter_complex',
+        'overlay=main_w-overlay_w-10:main_h-overlay_h-10',
+        '-an',
+        `${global.camera.uploadFolderTratado}/${concatNameArchive}`
+      ]
+    }
+
+    const ffmpeg = spawn('ffmpeg', args)
+    ffmpeg.stderr.setEncoding('utf8')
+    ffmpeg.on('error', (err) => {
+      // -- error process
+      const params = {
+        camId: 0,
+        locationId: locationId,
+        log: `ffmpeg: erro ao gerar video de upload: ${concatNameArchive}, error: ${err}`
+      }
+      LogController.setCamLog(params)
+    })
+    ffmpeg.on('close', () => {
+      const params = {
+        camId: 0,
+        locationId: locationId,
+        log: `Fim da tratativa do video do upload: ${concatNameArchive}`,
+        success: true
+      }
+      LogController.setCamLog(params)
+
+      fs.unlink(pathFile, () => {
+        // removido
+        const params = {
+          camId: 0,
+          locationId: locationId,
+          log: `apagado arquivo: ${concatNameArchive}`,
+          success: true
+        }
+        LogController.setCamLog(params)
+      })
+    })
+  }
+
   public stopRecordMovie(pid: number) {
     Kill(pid)
   }

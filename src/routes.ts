@@ -13,8 +13,9 @@ const storage = multer.diskStorage({
     cb(null, global.camera.uploadFolder)
   },
   filename: function (req, file, cb) {
+    const extension = file.originalname.split('.').pop()
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9)
-    cb(null, file.fieldname + '-' + uniqueSuffix)
+    cb(null, file.fieldname + '-' + uniqueSuffix + '.' + extension)
   }
 })
 

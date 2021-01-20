@@ -3,13 +3,13 @@ import moment from 'moment-timezone'
 import CamsController from './CamsController'
 import LogController from './LogController'
 import cron from 'node-cron'
-import { Request, Response } from 'express'
 import fs from 'fs'
 
 // -- entity
 import { Locations } from '../entity/gifplay/Locations'
 import { SpaceCameras } from '../entity/gifplay/SpaceCameras'
 import { Record } from '../entity/gifplay/Record'
+import { Upload } from '../entity/gifplay/Upload'
 
 interface IReceiveConcatCams extends Locations {
   spaceCameras: SpaceCameras[]
@@ -21,6 +21,7 @@ class CronController {
       // -- Executando a tarefa a cada 1 minuto
       console.log('Executando a tarefa a cada 1 minuto')
       await this.index()
+      await this.verifyUploadVideo()
     })
 
     cron.schedule('0 0 */1 * *', async () => {
@@ -40,6 +41,54 @@ class CronController {
         )
       }, 1000)
     })
+
+    setTimeout(() => this.verifyUploadVideo(), 1000)
+  }
+
+  private async verifyUploadVideo(): Promise<void> {
+    const getParams = {
+      table: 'upload',
+      entity: Upload,
+      where: 'processed = 0 LIMIT 1'
+    }
+    const uploadVideos = await DBController.get(getParams)
+
+    Promise.all(
+      uploadVideos.map(async (video: Upload) => {
+        const pathVideo = `${global.camera.uploadFolder}/${video.nameFile}`
+
+        console.log(pathVideo)
+
+        await fs.promises
+          .access(pathVideo)
+          .then(() => {
+            CamsController.convertVideoUpload(
+              video.nameFile,
+              pathVideo,
+              video.idLocation,
+              video.audio
+            )
+            const data: Upload = {
+              ...video,
+              processed: true
+            }
+
+            const paramsUpdate = {
+              entity: Upload,
+              data,
+              where: `id = ${video.id}`
+            }
+            DBController.update(paramsUpdate)
+          })
+          .catch(() => {
+            const paramsDelete = {
+              entity: Upload,
+              where: `id = ${video.id}`
+            }
+            DBController.delete(paramsDelete)
+          })
+      })
+    )
   }
 
   private async index(): Promise<void> {
