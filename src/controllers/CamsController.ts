@@ -729,6 +729,9 @@ class CamsController {
 
     const ffmpeg = spawn('ffmpeg', args)
     ffmpeg.stderr.setEncoding('utf8')
+    ffmpeg.stderr.on('data', function (data) {
+      console.log('stderr: ' + data)
+    })
 
     ffmpeg.on('error', (err) => {
       // -- error process
