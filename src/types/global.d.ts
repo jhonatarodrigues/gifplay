@@ -4,6 +4,7 @@ declare namespace NodeJS {
     camera: {
       outputFolder: string
       uploadFolder: string
+      uploadFolderTratado: string
       thumbs: string
       cut: string
       preview: string

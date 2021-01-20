@@ -12,6 +12,7 @@ interface IGet {
   where?: string
   paramsWhere?: any
   leftJoin?: LeftJoin
+  multipleLeftJoin?: LeftJoin[]
   db?: string
 }
 
@@ -44,6 +45,7 @@ class DBController {
     where,
     paramsWhere,
     leftJoin,
+    multipleLeftJoin,
     db = 'default'
   }: IGet): Promise<any> {
     const response = await getConnection(db)
@@ -58,6 +60,17 @@ class DBController {
         leftJoin.table2Name,
         leftJoin.condition
       )
+    }
+    if (Array.isArray(multipleLeftJoin)) {
+      console.log('aquii')
+      multipleLeftJoin.map((join) => {
+        response.leftJoinAndMapMany(
+          join.nameNewField,
+          join.table2Entity,
+          join.table2Name,
+          join.condition
+        )
+      })
     }
     if (where) {
       response.where(where, paramsWhere || {})
@@ -76,6 +89,7 @@ class DBController {
 
     return response
   }
+
   public async delete({
     entity,
     where,

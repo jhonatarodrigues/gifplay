@@ -13,6 +13,11 @@ import { SpaceCameras } from '../entity/gifplay/SpaceCameras'
 
 interface IReceiveConcatCams extends Locations {
   spaceCameras: SpaceCameras[]
+  upload: Upload[]
+}
+
+interface IUpload extends Upload {
+  filePath: string
 }
 
 interface ICams {
@@ -31,6 +36,7 @@ interface IItensResponseVideo {
   dateStart: string
   dateEnd: string
   cams: ICams[]
+  upload: IUpload[]
 }
 
 class VideoController {
@@ -88,18 +94,14 @@ class VideoController {
     let response: Response = res.status(200)
     await DBController.set(uploadParams)
       .then(() => {
-        response = res
-          .status(200)
-          .json({
-            msg: `Arquivo eviado para a locação ${params.idLocation} com sucesso!`
-          })
+        response = res.status(200).json({
+          msg: `Arquivo eviado para a locação ${params.idLocation} com sucesso!`
+        })
       })
       .catch((err) => {
-        response = res
-          .status(400)
-          .json({
-            msg: `Erro ao enviar o arquivo para a locação ${params.idLocation}: ${err}`
-          })
+        response = res.status(400).json({
+          msg: `Erro ao enviar o arquivo para a locação ${params.idLocation}: ${err}`
+        })
       })
 
     return response
@@ -187,12 +189,20 @@ class VideoController {
               AND port <> ''
               AND channel_default <> ''`,
       paramsWhere: { id: whereId, date: dateNow },
-      leftJoin: {
-        nameNewField: 'locations.spaceCameras',
-        table2Entity: SpaceCameras,
-        table2Name: 'space_cameras',
-        condition: 'locations.spaceId = space_cameras.space_id'
-      }
+      multipleLeftJoin: [
+        {
+          nameNewField: 'locations.spaceCameras',
+          table2Entity: SpaceCameras,
+          table2Name: 'space_cameras',
+          condition: 'locations.spaceId = space_cameras.space_id'
+        },
+        {
+          nameNewField: 'locations.upload',
+          table2Entity: Upload,
+          table2Name: 'upload',
+          condition: 'locations.id = upload.id_location'
+        }
+      ]
     }
     const locations = await DBController.get(getParams)
 
@@ -301,6 +311,26 @@ class VideoController {
               return newItem
             })
             if (itemExist === false) {
+              const itensUpload: IUpload[] = []
+              await Promise.all(
+                location.upload.map(async (item: Upload) => {
+                  const filePath = `${global.camera.uploadFolderTratado.replace(
+                    './',
+                    global.url
+                  )}/${item.nameFile}`
+                  const newItem: IUpload = {
+                    ...item,
+                    filePath
+                  }
+
+                  if (newItem.processed === true) {
+                    itensUpload.push(newItem)
+                  }
+
+                  return item
+                })
+              )
+
               responseItens.push({
                 id: location.id,
                 playerEmail: location.playerEmail || '',
@@ -308,7 +338,8 @@ class VideoController {
                   'YYYY-MM-DD HH:mm'
                 ),
                 dateEnd: moment(location.timeEnd).format('YYYY-MM-DD HH:mm'),
-                cams: videos
+                cams: videos,
+                upload: itensUpload
               })
             }
 
