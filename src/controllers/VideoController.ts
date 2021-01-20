@@ -4,11 +4,11 @@ import CamsController from './CamsController'
 import LogController from './LogController'
 import moment from 'moment-timezone'
 import fs from 'fs'
-import multer from 'multer'
 
 // -- entity
 import { Locations } from '../entity/gifplay/Locations'
 import { Record } from '../entity/gifplay/Record'
+import { Upload } from '../entity/gifplay/Upload'
 import { SpaceCameras } from '../entity/gifplay/SpaceCameras'
 
 interface IReceiveConcatCams extends Locations {
@@ -69,9 +69,40 @@ class VideoController {
       })
     }
 
-    console.log('params ===', params.idLocation, file)
+    const fileExtension = file.originalname.split('.').pop()
+    const fileName = `${file.filename}.${fileExtension}`
 
-    return res.status(200).json({ msg: 'arquivo ====' })
+    const dataUpload: Upload[] = [
+      {
+        idLocation: params.idLocation,
+        nameFile: fileName,
+        processed: false,
+        dateRegistry: moment().toDate()
+      }
+    ]
+
+    const uploadParams = {
+      entity: Upload,
+      data: dataUpload
+    }
+    let response: Response = res.status(200)
+    await DBController.set(uploadParams)
+      .then(() => {
+        response = res
+          .status(200)
+          .json({
+            msg: `Arquivo eviado para a locação ${params.idLocation} com sucesso!`
+          })
+      })
+      .catch((err) => {
+        response = res
+          .status(400)
+          .json({
+            msg: `Erro ao enviar o arquivo para a locação ${params.idLocation}: ${err}`
+          })
+      })
+
+    return response
   }
 
   public async setVideoCut(req: Request, res: Response): Promise<Response> {

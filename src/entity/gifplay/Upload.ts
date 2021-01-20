@@ -3,7 +3,7 @@ import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
 @Entity('upload', { schema: 'gifplay' })
 export class Upload {
   @PrimaryGeneratedColumn({ type: 'int', name: 'id', unsigned: true })
-  id: number
+  id?: number
 
   @Column('int', { name: 'id_location' })
   idLocation: number
@@ -15,5 +15,5 @@ export class Upload {
   processed: boolean
 
   @Column('datetime', { name: 'date' })
-  date: Date
+  dateRegistry: Date
 }
