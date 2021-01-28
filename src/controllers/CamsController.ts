@@ -9,6 +9,7 @@ import DBController from './DBController'
 import { Record } from '../entity/gifplay/Record'
 import { Upload } from '../entity/gifplay/Upload'
 import axios from 'axios'
+import { callbackify } from 'util'
 
 interface videoRtsp {
   LocationID: number
@@ -301,7 +302,12 @@ class CamsController {
     return arrayThumbs
   }
 
-  private async generateThumbs(name: string, id: number, locationId: number) {
+  private async generateThumbs(
+    name: string,
+    id: number,
+    locationId: number,
+    callback: () => void
+  ) {
     const concatNameArchive = `${this.generateNameArchive(
       name,
       id,
@@ -342,8 +348,13 @@ class CamsController {
           `${global.camera.thumbs}${concatNameArchive}_${numArchive}.jpg`
         ]
 
+        console.log('generatethumbs', args)
+
         const ffmpeg = spawn('ffmpeg', args)
         ffmpeg.stderr.setEncoding('utf8')
+        ffmpeg.stderr.on('data', function (data) {
+          console.log('stderr generate thumbs: ' + data)
+        })
 
         ffmpeg.on('error', (err) => {
           // -- error process
@@ -362,6 +373,10 @@ class CamsController {
             success: true
           }
           LogController.setCamLog(params)
+
+          console.log('fim generatethumbs')
+
+          callback()
         })
 
         return num
@@ -390,8 +405,13 @@ class CamsController {
       `${global.camera.preview}/${concatNameArchive}_000.mp4`
     ]
 
+    console.log('generate preview', args)
+
     const ffmpeg = spawn('ffmpeg', args)
     ffmpeg.stderr.setEncoding('utf8')
+    ffmpeg.stderr.on('data', function (data) {
+      console.log('stderr preview: ' + data)
+    })
 
     ffmpeg.on('error', (err) => {
       // -- error process
@@ -472,6 +492,9 @@ class CamsController {
     // -- ffmpeg através de preocessos
     const ffmpeg = spawn('ffmpeg', args)
     ffmpeg.stderr.setEncoding('utf8')
+    ffmpeg.stderr.on('data', function (data) {
+      console.log('stderr: ' + data)
+    })
     ffmpeg.on('error', (err) => {
       // -- error process
       const params = {
@@ -497,16 +520,16 @@ class CamsController {
         success: true
       }
       LogController.setCamLog(params)
-      if (code === 255) {
-        this.addWaterMarkInVideo(name, ID, LocationID, () => {
-          setTimeout(() => {
-            this.generateThumbs(name, ID, LocationID)
+
+      this.addWaterMarkInVideo(name, ID, LocationID, () => {
+        setTimeout(() => {
+          this.generateThumbs(name, ID, LocationID, () => {
             setTimeout(() => {
               this.generatePreview(name, ID, LocationID)
             }, 30000)
-          }, 30000)
-        })
-      }
+          })
+        }, 30000)
+      })
     })
 
     return ffmpeg.pid
@@ -556,8 +579,13 @@ class CamsController {
       `${global.camera.outputFolder}/${concatNameArchive}.mp4`
     ]
 
+    console.log('args ==', args)
+
     const ffmpeg = spawn('ffmpeg', args)
     ffmpeg.stderr.setEncoding('utf8')
+    ffmpeg.stderr.on('data', function (data) {
+      console.log('stderr markvideo: ' + data)
+    })
     ffmpeg.on('error', (err) => {
       // -- error process
       const params = {
@@ -585,6 +613,8 @@ class CamsController {
           success: true
         }
         LogController.setCamLog(params)
+
+        console.log('fim markvideo')
 
         callback()
       })
