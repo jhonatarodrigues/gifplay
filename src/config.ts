@@ -16,4 +16,4 @@ global.camera = {
   removeVideoTime: 30 // -- tempo em dias no caso remove de dois dias atrás
 }
 
-global.url = 'http://server.gifplay.com.br'
+global.url = 'http://server.gifplay.com.br:8080'
