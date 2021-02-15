@@ -1,0 +1,239 @@
+{
+  "info": {
+    "_postman_id": "f34342c7-efbf-40c6-9696-c264792e2c8d",
+    "name": "nodejsGifplay",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "GetVideo",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "x-access-token",
+            "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdXRoIjoibWFnaWMiLCJvdXRybyI6InNsYSIsIm91dHJvMiI6InNsYSIsIm91dHJvMyI6InNsYSIsImFnZW50IjoiUG9zdG1hblJ1bnRpbWUvNy4yNi44IiwiZXhwIjoxNjA2OTU2NjM1LCJpYXQiOjE2MDYzNTE4MzV9.7WZqK1nWBuuxvvWqfvkk5BPjlIrYB20oGIxmowPS1Eo",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8080/video/2",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["video", "2"]
+        },
+        "description": "get video com id da locacao"
+      },
+      "response": []
+    },
+    {
+      "name": "CutVideo",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "x-access-token",
+            "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdXRoIjoibWFnaWMiLCJvdXRybyI6InNsYSIsIm91dHJvMiI6InNsYSIsIm91dHJvMyI6InNsYSIsImFnZW50IjoiUG9zdG1hblJ1bnRpbWUvNy4yNi44IiwiZXhwIjoxNjA2OTU2NjM1LCJpYXQiOjE2MDYzNTE4MzV9.7WZqK1nWBuuxvvWqfvkk5BPjlIrYB20oGIxmowPS1Eo",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://52.67.73.121/video/cut/?transactionId=2187516159393980696&cam=18&location=2&timeStartCut=67&secondsCut=30&camAlias=cameraajhow",
+          "protocol": "http",
+          "host": ["52", "67", "73", "121"],
+          "path": ["video", "cut", ""],
+          "query": [
+            {
+              "key": "transactionId",
+              "value": "2187516159393980696"
+            },
+            {
+              "key": "cam",
+              "value": "18"
+            },
+            {
+              "key": "location",
+              "value": "2"
+            },
+            {
+              "key": "timeStartCut",
+              "value": "67",
+              "description": "in seconds"
+            },
+            {
+              "key": "secondsCut",
+              "value": "30",
+              "description": "in seconds"
+            },
+            {
+              "key": "camAlias",
+              "value": "cameraajhow"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "DownloadCutVideo",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "x-access-token",
+            "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdXRoIjoibWFnaWMiLCJvdXRybyI6InNsYSIsIm91dHJvMiI6InNsYSIsIm91dHJvMyI6InNsYSIsImFnZW50IjoiUG9zdG1hblJ1bnRpbWUvNy4yNi44IiwiZXhwIjoxNjA2OTU2NjM1LCJpYXQiOjE2MDYzNTE4MzV9.7WZqK1nWBuuxvvWqfvkk5BPjlIrYB20oGIxmowPS1Eo",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8080/video/cut/download/?transactionId=2187516159393980696",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["video", "cut", "download", ""],
+          "query": [
+            {
+              "key": "transactionId",
+              "value": "2187516159393980696"
+            },
+            {
+              "key": "location",
+              "value": "28",
+              "disabled": true
+            },
+            {
+              "key": "timeStartCut",
+              "value": "18",
+              "disabled": true
+            },
+            {
+              "key": "secondsCut",
+              "value": "30",
+              "disabled": true
+            },
+            {
+              "key": "camAlias",
+              "value": "testecamerareal",
+              "disabled": true
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "SendFile",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "file",
+              "type": "file",
+              "src": "/Users/jhonatarodrigues/Downloads/videoTeste.mp4"
+            },
+            {
+              "key": "idLocation",
+              "value": "2",
+              "type": "text"
+            },
+            {
+              "key": "audio",
+              "value": "1",
+              "description": "boolean 1 ou 0",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "http://localhost:8080/video/sendFile",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["video", "sendFile"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "CutUpload",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/upload/cut?idVideo=38&timeStartCut=30&secondsCut=20&transactionId=1213123kkklj",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["upload", "cut"],
+          "query": [
+            {
+              "key": "idVideo",
+              "value": "38"
+            },
+            {
+              "key": "timeStartCut",
+              "value": "30",
+              "description": "in seconds"
+            },
+            {
+              "key": "secondsCut",
+              "value": "20",
+              "description": "in seconds"
+            },
+            {
+              "key": "transactionId",
+              "value": "1213123kkklj"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "DownloadCutVideoUpload",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/upload/cut/download?transactionId=1213123kkklj",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["upload", "cut", "download"],
+          "query": [
+            {
+              "key": "transactionId",
+              "value": "1213123kkklj"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "deleteVideoUpload",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/upload?idVideo=36",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["upload"],
+          "query": [
+            {
+              "key": "idVideo",
+              "value": "36"
+            }
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
