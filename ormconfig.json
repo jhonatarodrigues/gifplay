@@ -7,7 +7,7 @@
     "username": "gifplay",
     "password": "Projeto$",
     "database": "gifplay",
-    "synchronize": true,
+    "synchronize": false,
     "logging": false,
     "entities": ["src/entity/gifplay/**/*.ts", "entity/gifplay/**/*.js"],
     "migrations": [

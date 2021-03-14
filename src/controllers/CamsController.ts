@@ -466,6 +466,8 @@ class CamsController {
       '0',
       '-preset',
       'veryslow',
+      '-movflags',
+      'faststart',
       '-b',
       '100k',
       '-r',

@@ -1,12 +1,13 @@
 import { Request, Response, Router, NextFunction } from 'express'
 import jwt from 'jsonwebtoken' // esse segredo do JWT seria uma config
 import multer from 'multer'
-
-// -- controllers
-import VideoController from './controllers/VideoController'
 import path from 'path'
 import fs from 'fs'
 const secret = 'cleytonmota'
+
+// -- controllers
+import VideoController from './controllers/VideoController'
+import StreamController from './controllers/StreamController'
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -57,6 +58,9 @@ routes.post(
   upload.single('file'),
   VideoController.setSendFile
 )
+
+// -- path stream
+routes.get('/path', StreamController.getStream)
 
 // routes.get('/teste', (req: Request, res: Response) => {
 //   const token = jwt.sign(
