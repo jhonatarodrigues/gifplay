@@ -78,10 +78,9 @@ class VideoController {
     const path = `${global.camera.uploadFolderCut}/${params.transactionId}.mp4`
     await fs.promises.access(path).then(() => {
       // achou o arquivo
-      fileUrl = `${global.url}/${global.camera.uploadFolderCut.replace(
-        './',
-        ''
-      )}/${params.transactionId}.mp4`
+      fileUrl = `/${global.camera.uploadFolderCut.replace('./', '')}/${
+        params.transactionId
+      }.mp4`
     })
 
     if (!fileUrl) {
@@ -355,7 +354,7 @@ class VideoController {
               .access(path)
               .then(() => {
                 // achou o arquivo
-                camUrl = `${global.url}${global.camera.outputFolder.replace(
+                camUrl = `${global.camera.outputFolder.replace(
                   './',
                   '/'
                 )}${name}`
@@ -383,7 +382,7 @@ class VideoController {
               .access(previewPath)
               .then(() => {
                 // achou o arquivo
-                previewUrl = `${global.url}${global.camera.preview.replace(
+                previewUrl = `${global.camera.preview.replace(
                   './',
                   '/'
                 )}/${nameArchivePreview}`
@@ -437,7 +436,7 @@ class VideoController {
                 location.upload.map(async (item: Upload) => {
                   const filePath = `${global.camera.uploadFolderPreview.replace(
                     './',
-                    `${global.url}/`
+                    `/`
                   )}/${item.nameFile}`
                   const pathRealFile = `${global.camera.uploadFolderPreview}/${item.nameFile}`
                   const newItem: IUpload = {
