@@ -122,7 +122,7 @@ class VideoController {
     await DBController.set(uploadParams)
       .then(() => {
         response = res.status(200).json({
-          msg: `Arquivo eviado para a locação ${params.idLocation} com sucesso!`
+          msg: `Arquivo enviado para a locação ${params.idLocation} com sucesso!`
         })
       })
       .catch((err) => {
@@ -431,24 +431,55 @@ class VideoController {
               return newItem
             })
             if (itemExist === false) {
-              const itensUpload: IUpload[] = []
+              responseItens.push({
+                id: location.id,
+                playerEmail: location.playerEmail || '',
+                dateStart: moment(location.timeStart).format(
+                  'YYYY-MM-DD HH:mm'
+                ),
+                dateEnd: moment(location.timeEnd).format('YYYY-MM-DD HH:mm'),
+                cams: videos,
+                upload: []
+              })
+            }
+
+            return true
+          })
+        )
+
+        return true
+      })
+    )
+
+    // --  return upload
+    await Promise.all(
+      responseItens.map(async (item) => {
+        const newItem = item
+        const uploads: IUpload[] = []
+
+        await Promise.all(
+          locations.map(async (location: IReceiveConcatCams) => {
+            if (item.id === location.id && location.upload.length > 0) {
               await Promise.all(
-                location.upload.map(async (item: Upload) => {
+                location.upload.map(async (upload: Upload) => {
                   const filePath = `${global.camera.uploadFolderPreview.replace(
                     './',
-                    `/`
-                  )}/${item.nameFile}`
-                  const pathRealFile = `${global.camera.uploadFolderPreview}/${item.nameFile}`
-                  const newItem: IUpload = {
-                    ...item,
+                    '/'
+                  )}/${upload.nameFile}`
+                  const pathRealFile = `${global.camera.uploadFolderPreview}/${upload.nameFile}`
+                  const newUpload: IUpload = {
+                    ...upload,
                     filePath
                   }
 
-                  if (newItem.processed === true && newItem.preview === true) {
+                  if (
+                    newUpload.processed === true &&
+                    newUpload.preview === true
+                  ) {
                     await fs.promises
                       .access(pathRealFile)
                       .then(() => {
-                        itensUpload.push(newItem)
+                        uploads.push(newUpload)
                       })
                       .catch(() => {
                         // -- n faz nd
@@ -458,24 +489,15 @@ class VideoController {
                   return item
                 })
               )
-
-              responseItens.push({
-                id: location.id,
-                playerEmail: location.playerEmail || '',
-                dateStart: moment(location.timeStart).format(
-                  'YYYY-MM-DD HH:mm'
-                ),
-                dateEnd: moment(location.timeEnd).format('YYYY-MM-DD HH:mm'),
-                cams: videos,
-                upload: itensUpload
-              })
             }
 
-            return true
+            return location
           })
         )
 
-        return true
+        newItem.upload = uploads
+
+        return newItem
       })
     )
 
