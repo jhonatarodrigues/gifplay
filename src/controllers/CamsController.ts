@@ -331,53 +331,66 @@ class CamsController {
       }
       LogController.setCamLog(params)
 
-      numberThumbs.map((num: number, index) => {
+      numberThumbs.map(async (num: number, index) => {
         const segundo = (duracao * num) / 100
         const tempo = moment(moment().format('YYYY-MM-DD'))
           .add(segundo, 'seconds')
           .format('HH:mm:ss')
         const newIndex = index + 1
         const numArchive = newIndex <= 9 ? `00${newIndex}` : `0${newIndex}`
-        const args = [
-          '-i',
-          `${global.camera.outputFolder}${concatNameArchive}.mp4`,
-          '-ss',
-          `${tempo}`,
-          '-vframes',
-          '1',
-          `${global.camera.thumbs}${concatNameArchive}_${numArchive}.jpg`
-        ]
 
-        console.log('generatethumbs', args)
+        await fs.promises
+          .access(`${global.camera.outputFolder}${concatNameArchive}.mp4`)
+          .then(() => {
+            const args = [
+              '-i',
+              `${global.camera.outputFolder}${concatNameArchive}.mp4`,
+              '-ss',
+              `${tempo}`,
+              '-vframes',
+              '1',
+              `${global.camera.thumbs}${concatNameArchive}_${numArchive}.jpg`
+            ]
 
-        const ffmpeg = spawn('ffmpeg', args)
-        ffmpeg.stderr.setEncoding('utf8')
-        ffmpeg.stderr.on('data', function (data) {
-          console.log('stderr generate thumbs: ' + data)
-        })
+            console.log('generatethumbs', args)
 
-        ffmpeg.on('error', (err) => {
-          // -- error process
-          const params = {
-            camId: id,
-            locationId: locationId,
-            log: `ffmpeg: erro ao gerar thumbs${index} do video: ${concatNameArchive}, error: ${err}`
-          }
-          LogController.setCamLog(params)
-        })
-        ffmpeg.on('close', () => {
-          const params = {
-            camId: id,
-            locationId: locationId,
-            log: `Fim da geração de thumbs${index} do video: ${concatNameArchive}`,
-            success: true
-          }
-          LogController.setCamLog(params)
+            const ffmpeg = spawn('ffmpeg', args)
+            ffmpeg.stderr.setEncoding('utf8')
+            ffmpeg.stderr.on('data', function (data) {
+              console.log('stderr generate thumbs: ' + data)
+            })
 
-          console.log('fim generatethumbs')
+            ffmpeg.on('error', (err) => {
+              // -- error process
+              const params = {
+                camId: id,
+                locationId: locationId,
+                log: `ffmpeg: erro ao gerar thumbs${index} do video: ${concatNameArchive}, error: ${err}`
+              }
+              LogController.setCamLog(params)
+            })
+            ffmpeg.on('close', () => {
+              const params = {
+                camId: id,
+                locationId: locationId,
+                log: `Fim da geração de thumbs${index} do video: ${concatNameArchive}`,
+                success: true
+              }
+              LogController.setCamLog(params)
 
-          callback()
-        })
+              console.log('fim generatethumbs')
+
+              callback()
+            })
+          })
+          .catch(() => {
+            const params = {
+              camId: id,
+              locationId: locationId,
+              log: 'ffmpeg: erro mão encontrou video'
+            }
+            LogController.setCamLog(params)
+          })
 
         return num
       })
@@ -391,46 +404,58 @@ class CamsController {
       locationId
     )}-000`
 
-    const args = [
-      '-y',
-      '-i',
-      `${global.camera.outputFolder}${concatNameArchive}.mp4`,
-      '-crf',
-      '36',
-      '-preset',
-      'slow',
-      '-vf',
-      'scale=320:240',
-      '-an',
-      `${global.camera.preview}/${concatNameArchive}_000.mp4`
-    ]
+    await fs.promises
+      .access(`${global.camera.outputFolder}${concatNameArchive}.mp4`)
+      .then(() => {
+        const args = [
+          '-y',
+          '-i',
+          `${global.camera.outputFolder}${concatNameArchive}.mp4`,
+          '-crf',
+          '36',
+          '-preset',
+          'slow',
+          '-vf',
+          'scale=320:240',
+          '-an',
+          `${global.camera.preview}/${concatNameArchive}_000.mp4`
+        ]
 
-    console.log('generate preview', args)
+        console.log('generate preview', args)
 
-    const ffmpeg = spawn('ffmpeg', args)
-    ffmpeg.stderr.setEncoding('utf8')
-    ffmpeg.stderr.on('data', function (data) {
-      console.log('stderr preview: ' + data)
-    })
+        const ffmpeg = spawn('ffmpeg', args)
+        ffmpeg.stderr.setEncoding('utf8')
+        ffmpeg.stderr.on('data', function (data) {
+          console.log('stderr preview: ' + data)
+        })
 
-    ffmpeg.on('error', (err) => {
-      // -- error process
-      const params = {
-        camId: id,
-        locationId: locationId,
-        log: `ffmpeg: erro ao gerar preview do video: ${concatNameArchive}, error: ${err}`
-      }
-      LogController.setCamLog(params)
-    })
-    ffmpeg.on('close', () => {
-      const params = {
-        camId: id,
-        locationId: locationId,
-        log: `Fim da geração do preview do video: ${concatNameArchive}`,
-        success: true
-      }
-      LogController.setCamLog(params)
-    })
+        ffmpeg.on('error', (err) => {
+          // -- error process
+          const params = {
+            camId: id,
+            locationId: locationId,
+            log: `ffmpeg: erro ao gerar preview do video: ${concatNameArchive}, error: ${err}`
+          }
+          LogController.setCamLog(params)
+        })
+        ffmpeg.on('close', () => {
+          const params = {
+            camId: id,
+            locationId: locationId,
+            log: `Fim da geração do preview do video: ${concatNameArchive}`,
+            success: true
+          }
+          LogController.setCamLog(params)
+        })
+      })
+      .catch(() => {
+        const params = {
+          camId: id,
+          locationId: locationId,
+          log: 'ffmpeg: erro mão encontrou video'
+        }
+        LogController.setCamLog(params)
+      })
   }
 
   public async getMovieCam({
@@ -569,58 +594,71 @@ class CamsController {
 
     const video = `${global.camera.outputFolder}${concatNameArchive}noMark.mp4`
 
-    const args = [
-      '-y',
-      '-i',
-      video,
-      '-i',
-      logoGifplay,
-      '-filter_complex',
-      'overlay=main_w-overlay_w-10:main_h-overlay_h-10',
-      '-an',
-      `${global.camera.outputFolder}/${concatNameArchive}.mp4`
-    ]
+    await fs.promises
+      .access(video)
+      .then(() => {
+        // -- faz nd
+        const args = [
+          '-y',
+          '-i',
+          video,
+          '-i',
+          logoGifplay,
+          '-filter_complex',
+          'overlay=main_w-overlay_w-10:main_h-overlay_h-10',
+          '-an',
+          `${global.camera.outputFolder}/${concatNameArchive}.mp4`
+        ]
 
-    console.log('args ==', args)
+        console.log('args ==', args)
 
-    const ffmpeg = spawn('ffmpeg', args)
-    ffmpeg.stderr.setEncoding('utf8')
-    ffmpeg.stderr.on('data', function (data) {
-      console.log('stderr markvideo: ' + data)
-    })
-    ffmpeg.on('error', (err) => {
-      // -- error process
-      const params = {
-        camId: id,
-        locationId: locationId,
-        log: `ffmpeg: erro ao gerar video com marca d água: ${concatNameArchive}, error: ${err}`
-      }
-      LogController.setCamLog(params)
-    })
-    ffmpeg.on('close', () => {
-      const params = {
-        camId: id,
-        locationId: locationId,
-        log: `Fim da geração do video com marca d agua: ${concatNameArchive}`,
-        success: true
-      }
-      LogController.setCamLog(params)
+        const ffmpeg = spawn('ffmpeg', args)
+        ffmpeg.stderr.setEncoding('utf8')
+        ffmpeg.stderr.on('data', function (data) {
+          console.log('stderr markvideo: ' + data)
+        })
+        ffmpeg.on('error', (err) => {
+          // -- error process
+          const params = {
+            camId: id,
+            locationId: locationId,
+            log: `ffmpeg: erro ao gerar video com marca d água: ${concatNameArchive}, error: ${err}`
+          }
+          LogController.setCamLog(params)
+        })
+        ffmpeg.on('close', () => {
+          const params = {
+            camId: id,
+            locationId: locationId,
+            log: `Fim da geração do video com marca d agua: ${concatNameArchive}`,
+            success: true
+          }
+          LogController.setCamLog(params)
 
-      fs.unlink(video, () => {
-        // removido
+          fs.unlink(video, () => {
+            // removido
+            const params = {
+              camId: id,
+              locationId: locationId,
+              log: `apagado arquivo: ${concatNameArchive}`,
+              success: true
+            }
+            LogController.setCamLog(params)
+
+            console.log('fim markvideo')
+
+            callback()
+          })
+        })
+      })
+      .catch(() => {
         const params = {
           camId: id,
           locationId: locationId,
-          log: `apagado arquivo: ${concatNameArchive}`,
-          success: true
+          log: 'ffmpeg: erro mão encontrou video'
         }
         LogController.setCamLog(params)
-
-        console.log('fim markvideo')
-
-        callback()
       })
-    })
   }
 
   public async convertVideoUpload(
@@ -641,76 +679,93 @@ class CamsController {
     }
     LogController.setCamLog(params)
 
-    let logoGifplay = './images/logoGifplay.png'
     await fs.promises
-      .access(logoGifplay)
-      .then(() => {
-        // -- faz nd
+      .access(pathFile)
+      .then(async () => {
+        let logoGifplay = './images/logoGifplay.png'
+        await fs.promises
+          .access(logoGifplay)
+          .then(() => {
+            // -- faz nd
+          })
+          .catch(() => {
+            logoGifplay = './src/images/logoGifplay.png'
+          })
+
+        let args = [
+          '-y',
+          '-i',
+          pathFile,
+          '-i',
+          logoGifplay,
+          '-filter_complex',
+          'overlay=main_w-overlay_w-10:main_h-overlay_h-10',
+          distinyFile
+        ]
+
+        if (audio === false) {
+          args = [
+            '-y',
+            '-i',
+            pathFile,
+            '-i',
+            logoGifplay,
+            '-filter_complex',
+            'overlay=main_w-overlay_w-10:main_h-overlay_h-10',
+            '-an',
+            distinyFile
+          ]
+        }
+
+        const ffmpeg = spawn('ffmpeg', args)
+        ffmpeg.stderr.setEncoding('utf8')
+        ffmpeg.on('error', (err) => {
+          // -- error process
+          const params = {
+            camId: 0,
+            locationId: locationId,
+            log: `ffmpeg: erro ao gerar video de upload: ${concatNameArchive}, error: ${err}`
+          }
+          LogController.setCamLog(params)
+        })
+        ffmpeg.on('close', () => {
+          const params = {
+            camId: 0,
+            locationId: locationId,
+            log: `Fim da tratativa do video do upload: ${concatNameArchive}`,
+            success: true
+          }
+          LogController.setCamLog(params)
+
+          setTimeout(() => {
+            this.convertVideoUploadPreview(
+              id,
+              nameFile,
+              distinyFile,
+              locationId
+            )
+          }, 5000)
+
+          fs.unlink(pathFile, () => {
+            // removido
+            const params = {
+              camId: 0,
+              locationId: locationId,
+              log: `apagado arquivo: ${concatNameArchive}`,
+              success: true
+            }
+            LogController.setCamLog(params)
+          })
+        })
       })
       .catch(() => {
-        logoGifplay = './src/images/logoGifplay.png'
-      })
-
-    let args = [
-      '-y',
-      '-i',
-      pathFile,
-      '-i',
-      logoGifplay,
-      '-filter_complex',
-      'overlay=main_w-overlay_w-10:main_h-overlay_h-10',
-      distinyFile
-    ]
-
-    if (audio === false) {
-      args = [
-        '-y',
-        '-i',
-        pathFile,
-        '-i',
-        logoGifplay,
-        '-filter_complex',
-        'overlay=main_w-overlay_w-10:main_h-overlay_h-10',
-        '-an',
-        distinyFile
-      ]
-    }
-
-    const ffmpeg = spawn('ffmpeg', args)
-    ffmpeg.stderr.setEncoding('utf8')
-    ffmpeg.on('error', (err) => {
-      // -- error process
-      const params = {
-        camId: 0,
-        locationId: locationId,
-        log: `ffmpeg: erro ao gerar video de upload: ${concatNameArchive}, error: ${err}`
-      }
-      LogController.setCamLog(params)
-    })
-    ffmpeg.on('close', () => {
-      const params = {
-        camId: 0,
-        locationId: locationId,
-        log: `Fim da tratativa do video do upload: ${concatNameArchive}`,
-        success: true
-      }
-      LogController.setCamLog(params)
-
-      setTimeout(() => {
-        this.convertVideoUploadPreview(id, nameFile, distinyFile, locationId)
-      }, 5000)
-
-      fs.unlink(pathFile, () => {
-        // removido
         const params = {
-          camId: 0,
+          camId: id,
           locationId: locationId,
-          log: `apagado arquivo: ${concatNameArchive}`,
-          success: true
+          log: 'ffmpeg: erro mão encontrou video'
         }
         LogController.setCamLog(params)
       })
-    })
   }
 
   public async convertVideoUploadPreview(
@@ -737,73 +792,85 @@ class CamsController {
         logoGifplay = './src/images/logoGifplay.png'
       })
 
-    const args = [
-      '-i',
-      pathFile,
-      '-map',
-      '0',
-      '-preset',
-      'veryslow',
-      '-r',
-      '24', // -- frames
-      '-crf',
-      global.camera.videoQuality, /// -- qualidade do video, default 23 quanto maior o numero pior a qualidade
-      '-threads',
-      '2',
-      '-metadata',
-      `title=GifPlay-${nameFile}`,
-      '-metadata',
-      `comment=${nameFile}`,
-      '-vf',
-      'scale=1280:720',
-      `${global.camera.uploadFolderPreview}/${nameFile}`
-    ]
+    await fs.promises
+      .access(global.camera.videoQuality)
+      .then(() => {
+        const args = [
+          '-i',
+          pathFile,
+          '-map',
+          '0',
+          '-preset',
+          'veryslow',
+          '-r',
+          '24', // -- frames
+          '-crf',
+          global.camera.videoQuality, /// -- qualidade do video, default 23 quanto maior o numero pior a qualidade
+          '-threads',
+          '2',
+          '-metadata',
+          `title=GifPlay-${nameFile}`,
+          '-metadata',
+          `comment=${nameFile}`,
+          '-vf',
+          'scale=1280:720',
+          `${global.camera.uploadFolderPreview}/${nameFile}`
+        ]
 
-    const ffmpeg = spawn('ffmpeg', args)
-    ffmpeg.stderr.setEncoding('utf8')
-    ffmpeg.stderr.on('data', function (data) {
-      console.log('stderr: ' + data)
-    })
+        const ffmpeg = spawn('ffmpeg', args)
+        ffmpeg.stderr.setEncoding('utf8')
+        ffmpeg.stderr.on('data', function (data) {
+          console.log('stderr: ' + data)
+        })
 
-    ffmpeg.on('error', (err) => {
-      // -- error process
-      const params = {
-        camId: 0,
-        locationId: locationId,
-        log: `ffmpeg: erro ao gerar video de upload de preview: ${nameFile}, error: ${err}`
-      }
-      LogController.setCamLog(params)
-    })
-    ffmpeg.on('close', () => {
-      const params = {
-        camId: 0,
-        locationId: locationId,
-        log: `Fim da tratativa do video do upload de preview: ${nameFile}`,
-        success: true
-      }
-      LogController.setCamLog(params)
+        ffmpeg.on('error', (err) => {
+          // -- error process
+          const params = {
+            camId: 0,
+            locationId: locationId,
+            log: `ffmpeg: erro ao gerar video de upload de preview: ${nameFile}, error: ${err}`
+          }
+          LogController.setCamLog(params)
+        })
+        ffmpeg.on('close', () => {
+          const params = {
+            camId: 0,
+            locationId: locationId,
+            log: `Fim da tratativa do video do upload de preview: ${nameFile}`,
+            success: true
+          }
+          LogController.setCamLog(params)
 
-      const data: any = {
-        preview: true
-      }
-      const paramsUpdate = {
-        entity: Upload,
-        data,
-        where: `id = ${id}`
-      }
-      DBController.update(paramsUpdate)
+          const data: any = {
+            preview: true
+          }
+          const paramsUpdate = {
+            entity: Upload,
+            data,
+            where: `id = ${id}`
+          }
+          DBController.update(paramsUpdate)
 
-      fs.unlink(pathFile, () => {
-        // removido
+          fs.unlink(pathFile, () => {
+            // removido
+            const params = {
+              camId: 0,
+              locationId: locationId,
+              log: `apagado arquivo: ${nameFile}`,
+              success: true
+            }
+            LogController.setCamLog(params)
+          })
+        })
+      })
+      .catch(() => {
         const params = {
-          camId: 0,
+          camId: id,
           locationId: locationId,
-          log: `apagado arquivo: ${nameFile}`,
-          success: true
+          log: 'ffmpeg: erro mão encontrou video'
         }
         LogController.setCamLog(params)
       })
-    })
   }
 
   public stopRecordMovie(pid: number) {
