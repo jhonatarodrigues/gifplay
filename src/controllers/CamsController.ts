@@ -774,6 +774,7 @@ class CamsController {
     pathFile: string,
     locationId: number
   ) {
+    console.log('aquii', id, nameFile, pathFile, locationId)
     const params = {
       camId: 0,
       locationId: locationId,
@@ -793,8 +794,9 @@ class CamsController {
       })
 
     await fs.promises
-      .access(global.camera.videoQuality)
+      .access(pathFile)
       .then(() => {
+        console.log('entrou aqui')
         const args = [
           '-i',
           pathFile,
@@ -851,19 +853,20 @@ class CamsController {
           }
           DBController.update(paramsUpdate)
 
-          fs.unlink(pathFile, () => {
-            // removido
-            const params = {
-              camId: 0,
-              locationId: locationId,
-              log: `apagado arquivo: ${nameFile}`,
-              success: true
-            }
-            LogController.setCamLog(params)
-          })
+          // fs.unlink(pathFile, () => {
+          //   // removido
+          //   const params = {
+          //     camId: 0,
+          //     locationId: locationId,
+          //     log: `apagado arquivo: ${nameFile}`,
+          //     success: true
+          //   }
+          //   LogController.setCamLog(params)
+          // })
         })
       })
-      .catch(() => {
+      .catch((err) => {
+        console.log('nao entrou', err)
         const params = {
           camId: id,
           locationId: locationId,
