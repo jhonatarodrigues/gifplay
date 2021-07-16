@@ -680,6 +680,8 @@ class CamsController {
     }
     LogController.setCamLog(params)
 
+    console.log('inicio conversao')
+
     await fs.promises
       .access(pathFile)
       .then(async () => {
@@ -720,8 +722,12 @@ class CamsController {
 
         const ffmpeg = spawn('ffmpeg', args)
         ffmpeg.stderr.setEncoding('utf8')
+        ffmpeg.stderr.on('data', function (data) {
+          console.log('conversao video upload: ' + data)
+        })
         ffmpeg.on('error', (err) => {
           // -- error process
+          console.log('error preview upload --', err)
           const params = {
             camId: 0,
             locationId: locationId,
@@ -730,6 +736,7 @@ class CamsController {
           LogController.setCamLog(params)
         })
         ffmpeg.on('close', () => {
+          console.log('fim do preview upload --')
           const params = {
             camId: 0,
             locationId: locationId,
